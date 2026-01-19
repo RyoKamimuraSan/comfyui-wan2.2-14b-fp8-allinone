@@ -382,7 +382,7 @@ filebrowser -r /app -a 0.0.0.0 -p 8080 &
 cd /app && python main.py --listen 0.0.0.0 --port 8188 &
 
 # JupyterLabをフォアグラウンドで起動（Paperspace UI用）
-jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
+PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
     --ServerApp.trust_xheaders=True \
     --ServerApp.disable_check_xsrf=False \
     --ServerApp.allow_remote_access=True \
