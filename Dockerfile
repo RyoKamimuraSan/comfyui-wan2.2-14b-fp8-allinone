@@ -111,7 +111,6 @@ RUN mkdir -p \
 # ============================================
 RUN cat <<'EOF' > /usr/local/bin/download_model.sh
 #!/bin/bash
-set -e
 # 引数: $1=出力ディレクトリ, $2=エントリ(URLまたはファイル名::URL)
 entry="$2"
 outdir="$1"
@@ -141,15 +140,21 @@ echo "[DOWNLOAD] $filename"
 echo "  URL: $url"
 echo "  Dir: $outdir"
 
-aria2c -x5 --console-log-level=notice --summary-interval=10 \
+# タイムアウトとリトライを設定、並列接続を1に減らす
+if aria2c -x1 \
+    --connect-timeout=60 \
+    --timeout=600 \
+    --max-tries=3 \
+    --retry-wait=10 \
+    --console-log-level=notice \
+    --summary-interval=30 \
     --content-disposition-default-utf8=true \
-    -d "$outdir" -o "$filename" "$url"
-
-if [ $? -eq 0 ]; then
+    -d "$outdir" -o "$filename" "$url"; then
     echo "[OK] Downloaded: $filename"
 else
     echo "[ERROR] Failed to download: $filename"
-    exit 1
+    echo "  Continuing with remaining models..."
+    exit 0
 fi
 EOF
 RUN chmod +x /usr/local/bin/download_model.sh
