@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-wan2.2-14b
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-wan22-14b-fp8-paperspace-nb
 
 jobs:
   build-and-push:
