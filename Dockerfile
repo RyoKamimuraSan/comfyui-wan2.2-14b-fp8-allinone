@@ -203,14 +203,28 @@ echo "$urls" | tr ' ' '\n' | while read -r repo_url; do
     fi
 
     echo "[INSTALL] $repo_name"
-    git clone --depth 1 "$repo_url" "$repo_name"
+    echo "  URL: $repo_url"
 
-    # requirements.txtがあればインストール
-    if [ -f "$repo_name/requirements.txt" ]; then
-        echo "[PIP] Installing requirements for $repo_name"
-        pip install -r "$repo_name/requirements.txt"
+    # タイムアウト付きでgit clone（5分）
+    if timeout 300 git clone --depth 1 --progress "$repo_url" "$repo_name" 2>&1; then
+        echo "[OK] Cloned: $repo_name"
+
+        # requirements.txtがあればインストール
+        if [ -f "$repo_name/requirements.txt" ]; then
+            echo "[PIP] Installing requirements for $repo_name"
+            if pip install -r "$repo_name/requirements.txt"; then
+                echo "[OK] Requirements installed for $repo_name"
+            else
+                echo "[WARN] Failed to install requirements for $repo_name"
+            fi
+        fi
+    else
+        echo "[ERROR] Failed to clone $repo_name (timeout or network error)"
+        echo "  Continuing with remaining nodes..."
     fi
 done
+
+echo "=== Custom node installation complete ==="
 EOF
 RUN chmod +x /usr/local/bin/install_custom_nodes.sh
 
