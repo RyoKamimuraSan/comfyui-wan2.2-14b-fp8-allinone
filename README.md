@@ -108,7 +108,6 @@ ComfyUI: `http://localhost:6006`
 - ComfyUI-Manager
 - Civicomfy
 - ComfyUI-VideoHelperSuite
-- ComfyUI-Impact-Pack
 - ComfyUI-RMBG
 - rgthree-comfy
 - ComfyUI-KJNodes

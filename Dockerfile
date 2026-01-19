@@ -21,7 +21,6 @@ ENV CUSTOM_NODE_URLS="\
 https://github.com/Comfy-Org/ComfyUI-Manager \
 https://github.com/MoonGoblinDev/Civicomfy \
 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite \
-https://github.com/ltdrdata/ComfyUI-Impact-Pack \
 https://github.com/1038lab/ComfyUI-RMBG \
 https://github.com/rgthree/rgthree-comfy \
 https://github.com/kijai/ComfyUI-KJNodes \
@@ -354,9 +353,17 @@ echo "=========================================="
 echo " ComfyUI All-in-One (Paperspace Mode)"
 echo "=========================================="
 
-# 1. JupyterLabを先にバックグラウンドで起動（Paperspace UIが「Running」表示）
+# 1. GCSマウント（最初に実行してキャッシュを早く開始）
 echo ""
-echo "[1/4] Starting JupyterLab..."
+echo "[1/4] Mounting GCS bucket..."
+/usr/local/bin/mount_gcs.sh
+
+# プリフェッチをバックグラウンドで開始（他の処理と並行してキャッシュ）
+/usr/local/bin/prefetch_models.sh &
+
+# 2. JupyterLabをバックグラウンドで起動（Paperspace UIが「Running」表示）
+echo ""
+echo "[2/4] Starting JupyterLab..."
 PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
     --ServerApp.trust_xheaders=True \
     --ServerApp.disable_check_xsrf=False \
@@ -364,18 +371,10 @@ PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-brows
     --ServerApp.allow_origin='*' \
     --ServerApp.allow_credentials=True &
 
-# 2. カスタムノードのインストール
+# 3. カスタムノードのインストール（この間にモデルキャッシュが進む）
 echo ""
-echo "[2/4] Installing custom nodes..."
+echo "[3/4] Installing custom nodes..."
 /usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
-
-# 3. GCSマウント
-echo ""
-echo "[3/4] Mounting GCS bucket..."
-/usr/local/bin/mount_gcs.sh
-
-# プリフェッチをバックグラウンドで開始
-/usr/local/bin/prefetch_models.sh &
 
 # 4. サービス起動
 echo ""
