@@ -280,6 +280,7 @@ echo "=========================================="
 echo ""
 echo "[1/4] Starting JupyterLab..."
 PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
+    --notebook-dir=/app \
     --ServerApp.trust_xheaders=True \
     --ServerApp.disable_check_xsrf=False \
     --ServerApp.allow_remote_access=True \
