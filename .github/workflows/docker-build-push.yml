@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-allinone
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-wan2.2-14b
 
 jobs:
   build-and-push:
