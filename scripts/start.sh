@@ -33,4 +33,4 @@ echo "=========================================="
 filebrowser -r /app -a 0.0.0.0 -p 8080 &
 
 # ComfyUIを起動
-python main.py --listen 0.0.0.0 --port 6006
+python main.py --listen 0.0.0.0 --port 6006 --fp8_e4m3fn-unet --fp8_e4m3fn-text-enc
