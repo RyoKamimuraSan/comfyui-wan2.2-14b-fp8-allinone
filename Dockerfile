@@ -1,6 +1,6 @@
 # ============================================
 # ComfyUI All-in-One Docker Image
-# モデルはGCSからマウント、カスタムノードは起動時にダウンロード
+# モデルは起動時にダウンロード、カスタムノードも起動時にインストール
 # ============================================
 
 # ============================================
@@ -15,15 +15,40 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
 # ============================================
+# モデルダウンロードURL設定（環境変数で上書き可能）
+# 書式: ファイル名::URL（スペースまたは改行区切り）
+# ============================================
+ENV CHECKPOINT_URLS="\
+Wan2.2_Remix_NSFW_i2v_14b_high_lighting_v2.0.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_high_lighting_v2.0.safetensors \
+Wan2.2_Remix_NSFW_i2v_14b_low_lighting_v2.0.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_low_lighting_v2.0.safetensors \
+"
+ENV VAE_URLS="\
+wan_2.1_vae.safetensors::https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors \
+"
+ENV LORA_URLS=""
+ENV CONTROLNET_URLS=""
+ENV UPSCALE_URLS="\
+4x-UltraSharp.pth::https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth \
+"
+ENV CLIP_URLS=""
+ENV UNET_URLS=""
+ENV TEXT_ENCODER_URLS="\
+nsfw_wan_umt5-xxl_bf16.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_bf16.safetensors \
+"
+
+# ============================================
 # Custom Node インストール設定（環境変数で上書き可能）
 # ============================================
 ENV CUSTOM_NODE_URLS="\
 https://github.com/Comfy-Org/ComfyUI-Manager \
 https://github.com/MoonGoblinDev/Civicomfy \
 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite \
+https://github.com/ltdrdata/ComfyUI-Impact-Pack \
 https://github.com/1038lab/ComfyUI-RMBG \
 https://github.com/rgthree/rgthree-comfy \
 https://github.com/kijai/ComfyUI-KJNodes \
+https://github.com/Fannovel16/ComfyUI-Frame-Interpolation \
+https://github.com/pythongosssss/ComfyUI-Custom-Scripts \
 "
 
 # ============================================
@@ -39,19 +64,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6 \
     libxext6 \
     libxrender1 \
-    gnupg \
-    lsb-release \
-    fuse \
-    && rm -rf /var/lib/apt/lists/*
-
-# ============================================
-# gcsfuseのインストール（GCSマウント用）
-# ============================================
-RUN echo "deb https://packages.cloud.google.com/apt gcsfuse-$(lsb_release -c -s) main" \
-    > /etc/apt/sources.list.d/gcsfuse.list \
-    && curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
-    && apt-get update \
-    && apt-get install -y gcsfuse \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
@@ -93,15 +105,14 @@ RUN mkdir -p \
     /app/custom_nodes
 
 # ============================================
-# ダウンロードヘルパースクリプト
+# ダウンロードヘルパースクリプト（aria2c -x5）
 # ============================================
 RUN cat <<'EOF' > /usr/local/bin/download_model.sh
 #!/bin/bash
-# 引数: $1=出力ディレクトリ, $2=エントリ(URLまたはファイル名::URL)
+# 引数: $1=出力ディレクトリ, $2=エントリ(ファイル名::URL または URLのみ)
 entry="$2"
 outdir="$1"
 
-# 空の場合はスキップ
 [ -z "$entry" ] && exit 0
 
 if [[ "$entry" == *"::"* ]]; then
@@ -123,24 +134,15 @@ if [ -f "$filepath" ]; then
 fi
 
 echo "[DOWNLOAD] $filename"
-echo "  URL: $url"
-echo "  Dir: $outdir"
-
-# タイムアウトとリトライを設定、並列接続を1に減らす
-if aria2c -x1 \
+if aria2c -x5 \
     --connect-timeout=60 \
     --timeout=600 \
     --max-tries=3 \
     --retry-wait=10 \
-    --console-log-level=notice \
-    --summary-interval=30 \
-    --content-disposition-default-utf8=true \
     -d "$outdir" -o "$filename" "$url"; then
     echo "[OK] Downloaded: $filename"
 else
-    echo "[ERROR] Failed to download: $filename"
-    echo "  Continuing with remaining models..."
-    exit 0
+    echo "[WARN] Failed to download: $filename"
 fi
 EOF
 RUN chmod +x /usr/local/bin/download_model.sh
@@ -166,7 +168,7 @@ EOF
 RUN chmod +x /usr/local/bin/download_models.sh
 
 # ============================================
-# Custom Node インストールスクリプト
+# Custom Node インストールスクリプト（タイムアウト時は削除してスキップ）
 # ============================================
 RUN cat <<'EOF' > /usr/local/bin/install_custom_nodes.sh
 #!/bin/bash
@@ -194,24 +196,25 @@ echo "$urls" | tr ' ' '\n' | while read -r repo_url; do
     fi
 
     echo "[INSTALL] $repo_name"
-    echo "  URL: $repo_url"
 
-    # タイムアウト付きでgit clone（5分）
-    if timeout 300 git clone --depth 1 --progress "$repo_url" "$repo_name" 2>&1; then
-        echo "[OK] Cloned: $repo_name"
+    # git clone with timeout (5min)
+    if ! timeout 300 git clone --depth 1 "$repo_url" "$repo_name" 2>&1; then
+        echo "[ERROR] Failed to clone $repo_name, removing and skipping..."
+        rm -rf "$repo_name"
+        continue
+    fi
 
-        # requirements.txtがあればインストール
-        if [ -f "$repo_name/requirements.txt" ]; then
-            echo "[PIP] Installing requirements for $repo_name"
-            if pip install -r "$repo_name/requirements.txt"; then
-                echo "[OK] Requirements installed for $repo_name"
-            else
-                echo "[WARN] Failed to install requirements for $repo_name"
-            fi
+    echo "[OK] Cloned: $repo_name"
+
+    # pip install with timeout (10min)
+    if [ -f "$repo_name/requirements.txt" ]; then
+        echo "[PIP] Installing requirements for $repo_name"
+        if ! timeout 600 pip install -r "$repo_name/requirements.txt" 2>&1; then
+            echo "[ERROR] Failed to install requirements for $repo_name, removing and skipping..."
+            rm -rf "$repo_name"
+            continue
         fi
-    else
-        echo "[ERROR] Failed to clone $repo_name (timeout or network error)"
-        echo "  Continuing with remaining nodes..."
+        echo "[OK] Requirements installed for $repo_name"
     fi
 done
 
@@ -220,122 +223,7 @@ EOF
 RUN chmod +x /usr/local/bin/install_custom_nodes.sh
 
 # ============================================
-# GCSマウント用ディレクトリ作成
-# ============================================
-RUN mkdir -p /mnt/gcs
-
-# ============================================
-# GCSマウントスクリプト
-# ============================================
-RUN cat <<'EOF' > /usr/local/bin/mount_gcs.sh
-#!/bin/bash
-# GCSバケットをマウントしてモデルディレクトリにシンボリックリンクを作成
-
-echo "[GCS] === GCS Mount Script Started ==="
-
-# 環境変数チェック
-if [ -z "$GCS_BUCKET" ]; then
-    echo "[GCS] GCS_BUCKET not set, skipping GCS mount"
-    exit 0
-fi
-
-echo "[GCS] GCS_BUCKET: $GCS_BUCKET"
-echo "[GCS] GCS_KEY_BASE64 length: ${#GCS_KEY_BASE64}"
-
-# Base64エンコードされた認証情報をデコード
-if [ -n "$GCS_KEY_BASE64" ]; then
-    echo "[GCS] Decoding service account key..."
-    if ! echo "$GCS_KEY_BASE64" | base64 -d > /tmp/gcs-key.json 2>&1; then
-        echo "[GCS] ERROR: Failed to decode GCS_KEY_BASE64"
-        echo "[GCS] First 50 chars: ${GCS_KEY_BASE64:0:50}..."
-        exit 1
-    fi
-
-    # JSONの妥当性チェック
-    if ! python3 -c "import json; json.load(open('/tmp/gcs-key.json'))" 2>&1; then
-        echo "[GCS] ERROR: Decoded key is not valid JSON"
-        echo "[GCS] Content preview:"
-        head -c 200 /tmp/gcs-key.json
-        exit 1
-    fi
-
-    export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcs-key.json
-    echo "[GCS] Service account key decoded successfully"
-else
-    echo "[GCS] WARNING: GCS_KEY_BASE64 not set, using default credentials"
-fi
-
-echo "[GCS] Mounting bucket: $GCS_BUCKET"
-
-# キャッシュディレクトリ作成
-mkdir -p /tmp/gcsfuse-cache
-
-# gcsfuseでマウント（キャッシュ有効、デバッグ出力）
-echo "[GCS] Running gcsfuse..."
-if ! gcsfuse \
-    --file-cache-max-size-mb=-1 \
-    --file-cache-cache-file-for-range-read \
-    --stat-cache-ttl=1h \
-    --type-cache-ttl=1h \
-    --implicit-dirs \
-    --foreground=false \
-    --debug_fuse \
-    --debug_gcs \
-    "$GCS_BUCKET" /mnt/gcs 2>&1; then
-    echo "[GCS] ERROR: gcsfuse command failed"
-    echo "[GCS] Check: bucket name, permissions, credentials"
-    exit 1
-fi
-
-# マウント確認
-sleep 2
-if ! mountpoint -q /mnt/gcs; then
-    echo "[GCS] ERROR: /mnt/gcs is not mounted"
-    exit 1
-fi
-
-echo "[GCS] Successfully mounted $GCS_BUCKET to /mnt/gcs"
-
-# バケット内容確認
-echo "[GCS] Listing bucket contents..."
-ls -la /mnt/gcs/ 2>&1 || echo "[GCS] WARNING: Could not list bucket contents"
-
-# 既存のmodelsディレクトリを削除してシンボリックリンクを作成
-echo "[GCS] Creating symlinks to model directories..."
-rm -rf /app/models
-ln -sf /mnt/gcs /app/models
-
-echo "[GCS] Symlink created: /app/models -> /mnt/gcs"
-echo "[GCS] === GCS Mount Script Completed ==="
-EOF
-RUN chmod +x /usr/local/bin/mount_gcs.sh
-
-# ============================================
-# モデルプリフェッチスクリプト
-# ============================================
-RUN cat <<'EOF' > /usr/local/bin/prefetch_models.sh
-#!/bin/bash
-# バックグラウンドで全モデルファイルを読み込んでキャッシュ作成
-
-if [ ! -d "/mnt/gcs" ] || [ -z "$(ls -A /mnt/gcs 2>/dev/null)" ]; then
-    echo "[PREFETCH] GCS not mounted or empty, skipping prefetch"
-    exit 0
-fi
-
-echo "[PREFETCH] Starting model cache prefetch..."
-
-find /mnt/gcs -type f \( -name "*.safetensors" -o -name "*.pth" -o -name "*.ckpt" -o -name "*.bin" \) 2>/dev/null | while read -r file; do
-    filename=$(basename "$file")
-    echo "[PREFETCH] Caching: $filename"
-    cat "$file" > /dev/null 2>&1
-done
-
-echo "[PREFETCH] Complete!"
-EOF
-RUN chmod +x /usr/local/bin/prefetch_models.sh
-
-# ============================================
-# 起動スクリプト（モデル・カスタムノードをダウンロード）
+# 起動スクリプト（スタンドアロン用）
 # ============================================
 RUN cat <<'EOF' > /app/start.sh
 #!/bin/bash
@@ -378,7 +266,7 @@ EOF
 RUN chmod +x /app/start.sh
 
 # ============================================
-# Paperspace Notebooks 用起動スクリプト（GCSマウント対応）
+# Paperspace Notebooks 用起動スクリプト
 # ============================================
 RUN cat <<'EOF' > /app/start-paperspace.sh
 #!/bin/bash
@@ -398,18 +286,19 @@ PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-brows
     --ServerApp.allow_origin='*' \
     --ServerApp.allow_credentials=True &
 
-# 2. GCSマウント（失敗してもスクリプト継続）
+# 2. カスタムノードのインストール
 echo ""
-echo "[2/4] Mounting GCS bucket..."
-/usr/local/bin/mount_gcs.sh || echo "[WARN] GCS mount failed, continuing without GCS"
-
-# プリフェッチをバックグラウンドで開始（GCSマウント成功時のみ効果あり）
-/usr/local/bin/prefetch_models.sh &
-
-# 3. カスタムノードのインストール（この間にモデルキャッシュが進む）
-echo ""
-echo "[3/4] Installing custom nodes..."
+echo "[2/4] Installing custom nodes..."
 /usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
+
+# 3. モデルダウンロード（バックグラウンド）
+echo ""
+echo "[3/4] Downloading models..."
+/usr/local/bin/download_models.sh /app/models/checkpoints "$CHECKPOINT_URLS" &
+/usr/local/bin/download_models.sh /app/models/vae "$VAE_URLS" &
+/usr/local/bin/download_models.sh /app/models/loras "$LORA_URLS" &
+/usr/local/bin/download_models.sh /app/models/upscale_models "$UPSCALE_URLS" &
+/usr/local/bin/download_models.sh /app/models/text_encoders "$TEXT_ENCODER_URLS" &
 
 # 4. サービス起動
 echo ""
