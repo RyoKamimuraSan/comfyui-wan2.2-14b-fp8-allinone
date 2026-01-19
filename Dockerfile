@@ -332,14 +332,14 @@ echo "[2/3] Downloading models..."
 echo ""
 echo "[3/3] Starting services..."
 echo "  - Filebrowser: http://0.0.0.0:8080 (admin/admin)"
-echo "  - ComfyUI: http://0.0.0.0:8188"
+echo "  - ComfyUI: http://0.0.0.0:6006"
 echo "=========================================="
 
 # Filebrowserをバックグラウンドで起動
 filebrowser -r /app -a 0.0.0.0 -p 8080 &
 
 # ComfyUIを起動
-python main.py --listen 0.0.0.0 --port 8188
+python main.py --listen 0.0.0.0 --port 6006
 EOF
 RUN chmod +x /app/start.sh
 
@@ -382,14 +382,14 @@ echo ""
 echo "[4/4] Starting services..."
 echo "  - JupyterLab: http://0.0.0.0:8888 (already running)"
 echo "  - Filebrowser: http://0.0.0.0:8080 (admin/admin)"
-echo "  - ComfyUI: http://0.0.0.0:8188"
+echo "  - ComfyUI: http://0.0.0.0:6006 (TensorBoard URL)"
 echo "=========================================="
 
 # Filebrowserをバックグラウンドで起動
 filebrowser -r /app -a 0.0.0.0 -p 8080 &
 
-# ComfyUIをバックグラウンドで起動
-cd /app && python main.py --listen 0.0.0.0 --port 8188 &
+# ComfyUIをバックグラウンドで起動（TensorBoardポート6006を使用）
+cd /app && python main.py --listen 0.0.0.0 --port 6006 &
 
 # 全バックグラウンドプロセスを待機
 wait
@@ -399,7 +399,7 @@ RUN chmod +x /app/start-paperspace.sh
 # ============================================
 # ポート公開
 # ============================================
-EXPOSE 8188 8080 8888
+EXPOSE 6006 8080 8888
 
 # ============================================
 # 起動コマンド（デフォルトはスタンドアロン用）

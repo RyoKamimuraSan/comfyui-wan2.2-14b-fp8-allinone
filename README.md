@@ -61,33 +61,40 @@ gs://YOUR_BUCKET_NAME/
 | 設定項目 | 値 |
 |----------|-----|
 | Container Image | `ryokamimurasan/comfyui-allinone` |
-| Command | `/app/start-paperspace.sh` |
+| Command | `GCS_BUCKET=YOUR_BUCKET GCS_KEY_BASE64=eyJ... /app/start-paperspace.sh` |
 
-**環境変数:**
+### 4. ComfyUI にアクセス
 
-| 変数名 | 値 |
-|--------|-----|
-| `GCS_BUCKET` | `YOUR_BUCKET_NAME` |
-| `GCS_KEY_BASE64` | `eyJ0eXBlIjoic2VydmljZV9hY2NvdW50Ii...` (Base64値) |
+ComfyUIはTensorBoardポート（6006）で起動するため、以下のURL形式でアクセス：
+
+```
+https://tensorboard-{notebook-id}.{domain}.paperspacegradient.com
+```
+
+**例:**
+- JupyterLab: `https://abc123.xyz456.paperspacegradient.com`
+- ComfyUI: `https://tensorboard-abc123.xyz456.paperspacegradient.com`
 
 ### ポート
 
-| ポート | 用途 |
-|--------|------|
-| 8188 | ComfyUI Web UI |
-| 8080 | Filebrowser (admin/admin) |
-| 8888 | JupyterLab |
+| ポート | 用途 | アクセス方法 |
+|--------|------|-------------|
+| 6006 | ComfyUI Web UI | TensorBoard URL |
+| 8080 | Filebrowser | - |
+| 8888 | JupyterLab | デフォルトURL |
 
 ## ローカル Docker で実行
 
 GCS を使用せずローカルボリュームでモデルを管理する場合：
 
 ```bash
-docker run --gpus all -p 8188:8188 -p 8080:8080 \
+docker run --gpus all -p 6006:6006 -p 8080:8080 \
   -v $(pwd)/models:/app/models \
   -v $(pwd)/output:/app/output \
   ryokamimurasan/comfyui-allinone
 ```
+
+ComfyUI: `http://localhost:6006`
 
 ## カスタムノードの設定
 
