@@ -6,7 +6,6 @@ ComfyUI を簡単にデプロイできる Docker イメージです。モデル�
 
 - **PyTorch 2.9.1 + CUDA 12.6** ベース
 - **モデル自動ダウンロード** - 環境変数でURLを指定
-- **Filebrowser** でWebからファイル管理
 - **JupyterLab** 対応（Paperspace Notebooks用）
 - カスタムノードは起動時に自動インストール
 
@@ -36,13 +35,12 @@ https://tensorboard-{notebook-id}.{domain}.paperspacegradient.com
 | ポート | 用途 | アクセス方法 |
 |--------|------|-------------|
 | 6006 | ComfyUI Web UI | TensorBoard URL |
-| 8080 | Filebrowser | - |
 | 8888 | JupyterLab | デフォルトURL |
 
 ## ローカル Docker で実行
 
 ```bash
-docker run --gpus all -p 6006:6006 -p 8080:8080 \
+docker run --gpus all -p 6006:6006 \
   -v $(pwd)/models:/app/models \
   -v $(pwd)/output:/app/output \
   ryokamimurasan/comfyui-allinone
