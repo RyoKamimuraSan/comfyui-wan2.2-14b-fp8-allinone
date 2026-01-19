@@ -30,12 +30,8 @@ echo "[2/3] Downloading models..."
 # サービス起動
 echo ""
 echo "[3/3] Starting services..."
-echo "  - Filebrowser: http://0.0.0.0:8080 (admin/admin)"
 echo "  - ComfyUI: http://0.0.0.0:6006"
 echo "=========================================="
-
-# Filebrowserをバックグラウンドで起動
-filebrowser -r /app -a 0.0.0.0 -p 8080 &
 
 # ComfyUIを起動
 python main.py --listen 0.0.0.0 --port 6006 --fp8_e4m3fn-unet --fp8_e4m3fn-text-enc

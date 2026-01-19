@@ -56,7 +56,6 @@ https://github.com/pythongosssss/ComfyUI-Custom-Scripts \
 # ============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
-    wget \
     curl \
     aria2 \
     libgl1-mesa-glx \
@@ -67,11 +66,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# Filebrowserのインストール
-# ============================================
-RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
-
-# ============================================
 # ComfyUIのインストール
 # ============================================
 WORKDIR /app
@@ -80,13 +74,9 @@ WORKDIR /app
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git . \
     && rm -rf .git
 
-# ComfyUIの依存関係をインストール
-RUN pip install -r requirements.txt
-
-# ============================================
-# JupyterLab のインストール（Paperspace Notebooks用）
-# ============================================
-RUN pip install jupyterlab
+# ComfyUIの依存関係 + JupyterLab をインストール
+RUN pip install -r requirements.txt jupyterlab && \
+    find /opt/conda/lib/python*/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 # ============================================
 # ディレクトリ構造の作成
@@ -119,7 +109,7 @@ RUN chmod +x /usr/local/bin/*.sh /app/*.sh
 # ============================================
 # ポート公開
 # ============================================
-EXPOSE 6006 8080 8888
+EXPOSE 6006 8888
 
 # ============================================
 # 起動コマンド（デフォルトはスタンドアロン用）

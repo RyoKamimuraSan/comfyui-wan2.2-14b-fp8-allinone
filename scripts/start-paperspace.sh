@@ -57,12 +57,8 @@ echo "[4/5] Downloading models..."
 echo ""
 echo "[5/5] Starting services..."
 echo "  - JupyterLab: http://0.0.0.0:8888 (already running)"
-echo "  - Filebrowser: http://0.0.0.0:8080 (admin/admin)"
 echo "  - ComfyUI: http://0.0.0.0:6006 (TensorBoard URL)"
 echo "=========================================="
-
-# Filebrowserをバックグラウンドで起動
-filebrowser -r /app -a 0.0.0.0 -p 8080 &
 
 # ComfyUIをバックグラウンドで起動（TensorBoardポート6006を使用）
 cd /app && python main.py --listen 0.0.0.0 --port 6006 --fp8_e4m3fn-unet --fp8_e4m3fn-text-enc &
