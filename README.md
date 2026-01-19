@@ -66,7 +66,7 @@ ComfyUI: `http://localhost:6006`
 - Wan2.2 Remix NSFW i2v 14b (high/low lighting)
 - wan 2.1 VAE
 - 4x-UltraSharp (upscale)
-- nsfw_wan_umt5-xxl_bf16 (text encoder)
+- nsfw_wan_umt5-xxl_fp8_scaled (text encoder)
 
 ## カスタムノードの設定
 

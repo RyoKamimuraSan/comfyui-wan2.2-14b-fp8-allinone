@@ -33,7 +33,7 @@ ENV UPSCALE_URLS="\
 ENV CLIP_URLS=""
 ENV UNET_URLS=""
 ENV TEXT_ENCODER_URLS="\
-nsfw_wan_umt5-xxl_bf16.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_bf16.safetensors \
+nsfw_wan_umt5-xxl_fp8_scaled.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_fp8_scaled.safetensors \
 "
 
 # ============================================
