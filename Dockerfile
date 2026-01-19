@@ -231,17 +231,38 @@ RUN cat <<'EOF' > /usr/local/bin/mount_gcs.sh
 #!/bin/bash
 # GCSバケットをマウントしてモデルディレクトリにシンボリックリンクを作成
 
+echo "[GCS] === GCS Mount Script Started ==="
+
 # 環境変数チェック
 if [ -z "$GCS_BUCKET" ]; then
     echo "[GCS] GCS_BUCKET not set, skipping GCS mount"
     exit 0
 fi
 
+echo "[GCS] GCS_BUCKET: $GCS_BUCKET"
+echo "[GCS] GCS_KEY_BASE64 length: ${#GCS_KEY_BASE64}"
+
 # Base64エンコードされた認証情報をデコード
 if [ -n "$GCS_KEY_BASE64" ]; then
     echo "[GCS] Decoding service account key..."
-    echo "$GCS_KEY_BASE64" | base64 -d > /tmp/gcs-key.json
+    if ! echo "$GCS_KEY_BASE64" | base64 -d > /tmp/gcs-key.json 2>&1; then
+        echo "[GCS] ERROR: Failed to decode GCS_KEY_BASE64"
+        echo "[GCS] First 50 chars: ${GCS_KEY_BASE64:0:50}..."
+        exit 1
+    fi
+
+    # JSONの妥当性チェック
+    if ! python3 -c "import json; json.load(open('/tmp/gcs-key.json'))" 2>&1; then
+        echo "[GCS] ERROR: Decoded key is not valid JSON"
+        echo "[GCS] Content preview:"
+        head -c 200 /tmp/gcs-key.json
+        exit 1
+    fi
+
     export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcs-key.json
+    echo "[GCS] Service account key decoded successfully"
+else
+    echo "[GCS] WARNING: GCS_KEY_BASE64 not set, using default credentials"
 fi
 
 echo "[GCS] Mounting bucket: $GCS_BUCKET"
@@ -249,22 +270,35 @@ echo "[GCS] Mounting bucket: $GCS_BUCKET"
 # キャッシュディレクトリ作成
 mkdir -p /tmp/gcsfuse-cache
 
-# gcsfuseでマウント（キャッシュ有効）
-gcsfuse \
+# gcsfuseでマウント（キャッシュ有効、デバッグ出力）
+echo "[GCS] Running gcsfuse..."
+if ! gcsfuse \
     --file-cache-max-size-mb=-1 \
     --file-cache-cache-file-for-range-read \
     --stat-cache-ttl=1h \
     --type-cache-ttl=1h \
     --implicit-dirs \
     --foreground=false \
-    "$GCS_BUCKET" /mnt/gcs
+    --debug_fuse \
+    --debug_gcs \
+    "$GCS_BUCKET" /mnt/gcs 2>&1; then
+    echo "[GCS] ERROR: gcsfuse command failed"
+    echo "[GCS] Check: bucket name, permissions, credentials"
+    exit 1
+fi
 
-if [ $? -ne 0 ]; then
-    echo "[GCS] ERROR: Failed to mount GCS bucket"
+# マウント確認
+sleep 2
+if ! mountpoint -q /mnt/gcs; then
+    echo "[GCS] ERROR: /mnt/gcs is not mounted"
     exit 1
 fi
 
 echo "[GCS] Successfully mounted $GCS_BUCKET to /mnt/gcs"
+
+# バケット内容確認
+echo "[GCS] Listing bucket contents..."
+ls -la /mnt/gcs/ 2>&1 || echo "[GCS] WARNING: Could not list bucket contents"
 
 # 既存のmodelsディレクトリを削除してシンボリックリンクを作成
 echo "[GCS] Creating symlinks to model directories..."
@@ -272,6 +306,7 @@ rm -rf /app/models
 ln -sf /mnt/gcs /app/models
 
 echo "[GCS] Symlink created: /app/models -> /mnt/gcs"
+echo "[GCS] === GCS Mount Script Completed ==="
 EOF
 RUN chmod +x /usr/local/bin/mount_gcs.sh
 
@@ -353,23 +388,23 @@ echo "=========================================="
 echo " ComfyUI All-in-One (Paperspace Mode)"
 echo "=========================================="
 
-# 1. GCSマウント（最初に実行してキャッシュを早く開始）
+# 1. JupyterLabを最初にバックグラウンドで起動（Paperspace UIが「Running」表示）
 echo ""
-echo "[1/4] Mounting GCS bucket..."
-/usr/local/bin/mount_gcs.sh
-
-# プリフェッチをバックグラウンドで開始（他の処理と並行してキャッシュ）
-/usr/local/bin/prefetch_models.sh &
-
-# 2. JupyterLabをバックグラウンドで起動（Paperspace UIが「Running」表示）
-echo ""
-echo "[2/4] Starting JupyterLab..."
+echo "[1/4] Starting JupyterLab..."
 PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
     --ServerApp.trust_xheaders=True \
     --ServerApp.disable_check_xsrf=False \
     --ServerApp.allow_remote_access=True \
     --ServerApp.allow_origin='*' \
     --ServerApp.allow_credentials=True &
+
+# 2. GCSマウント（失敗してもスクリプト継続）
+echo ""
+echo "[2/4] Mounting GCS bucket..."
+/usr/local/bin/mount_gcs.sh || echo "[WARN] GCS mount failed, continuing without GCS"
+
+# プリフェッチをバックグラウンドで開始（GCSマウント成功時のみ効果あり）
+/usr/local/bin/prefetch_models.sh &
 
 # 3. カスタムノードのインストール（この間にモデルキャッシュが進む）
 echo ""
