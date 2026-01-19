@@ -10,6 +10,11 @@ echo ""
 echo "[1/3] Installing custom nodes..."
 /usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
 
+# RIFE モデルのダウンロード（Frame-Interpolation用）
+mkdir -p /app/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife
+/usr/local/bin/download_model.sh /app/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife \
+    "https://github.com/styler00dollar/VSGAN-tensorrt-docker/releases/download/models/rife49.pth"
+
 # モデルのダウンロード
 echo ""
 echo "[2/3] Downloading models..."
