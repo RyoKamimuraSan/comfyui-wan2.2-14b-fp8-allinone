@@ -1,23 +1,74 @@
 # ComfyUI All-in-One Docker Image
 
-ComfyUI を簡単にデプロイできる Docker イメージです。モデルとカスタムノードはコンテナ起動時に自動ダウンロードされます。
+ComfyUI を簡単にデプロイできる Docker イメージです。モデルは Google Cloud Storage (GCS) からマウントして使用します。
 
 ## 特徴
 
 - **PyTorch 2.9.1 + CUDA 12.6** ベース
-- **aria2** による高速ダウンロード（5並列接続）
+- **GCS マウント** でモデルを高速読み込み（キャッシュ対応）
 - **Filebrowser** でWebからファイル管理
 - **JupyterLab** 対応（Paperspace Notebooks用）
-- モデル・カスタムノードは起動時にダウンロード（既存ファイルはスキップ）
-- 環境変数でURL設定を上書き可能
+- カスタムノードは起動時に自動インストール
 
-## クイックスタート
+## Paperspace Notebooks で使用
 
-### Docker で実行
+### 1. GCS バケットを準備
 
 ```bash
-docker run --gpus all -p 8188:8188 -p 8080:8080 yourname/comfyui-allinone
+# バケット作成
+gcloud storage buckets create gs://YOUR_BUCKET_NAME --location=us-central1
+
+# サービスアカウント作成
+gcloud iam service-accounts create comfyui-gcs \
+    --display-name="ComfyUI GCS Access"
+
+# 権限付与
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+    --member="serviceAccount:comfyui-gcs@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/storage.objectViewer"
+
+# キー作成
+gcloud iam service-accounts keys create gcs-key.json \
+    --iam-account=comfyui-gcs@YOUR_PROJECT_ID.iam.gserviceaccount.com
+
+# Base64エンコード
+cat gcs-key.json | base64 -w 0
 ```
+
+### 2. モデルをアップロード
+
+```bash
+# ディレクトリ構造に従ってアップロード
+gsutil cp model.safetensors gs://YOUR_BUCKET_NAME/checkpoints/
+gsutil cp vae.safetensors gs://YOUR_BUCKET_NAME/vae/
+```
+
+**GCSバケット構造:**
+```
+gs://YOUR_BUCKET_NAME/
+├── checkpoints/
+├── vae/
+├── loras/
+├── controlnet/
+├── upscale_models/
+├── clip/
+├── unet/
+└── text_encoders/
+```
+
+### 3. Paperspace で起動
+
+| 設定項目 | 値 |
+|----------|-----|
+| Container Image | `ryokamimurasan/comfyui-allinone` |
+| Command | `/app/start-paperspace.sh` |
+
+**環境変数:**
+
+| 変数名 | 値 |
+|--------|-----|
+| `GCS_BUCKET` | `YOUR_BUCKET_NAME` |
+| `GCS_KEY_BASE64` | `eyJ0eXBlIjoic2VydmljZV9hY2NvdW50Ii...` (Base64値) |
 
 ### ポート
 
@@ -25,87 +76,47 @@ docker run --gpus all -p 8188:8188 -p 8080:8080 yourname/comfyui-allinone
 |--------|------|
 | 8188 | ComfyUI Web UI |
 | 8080 | Filebrowser (admin/admin) |
-| 8888 | JupyterLab (Paperspace用) |
+| 8888 | JupyterLab |
 
-## Paperspace Notebooks で使用
+## ローカル Docker で実行
 
-1. **Start from Scratch** を選択
-2. **Container Image**: `yourname/comfyui-allinone`
-3. **Command**: `/app/start-paperspace.sh`
-
-## 環境変数でモデルを設定
-
-起動時に環境変数でモデルURLを上書きできます。
-
-```bash
-docker run --gpus all -p 8188:8188 -p 8080:8080 \
-  -e CHECKPOINT_URLS="model.safetensors::https://example.com/model.safetensors" \
-  -e CUSTOM_NODE_URLS="https://github.com/xxx/yyy" \
-  yourname/comfyui-allinone
-```
-
-### 対応環境変数
-
-| 環境変数 | 保存先 |
-|----------|--------|
-| `CHECKPOINT_URLS` | `/app/models/checkpoints` |
-| `VAE_URLS` | `/app/models/vae` |
-| `LORA_URLS` | `/app/models/loras` |
-| `CONTROLNET_URLS` | `/app/models/controlnet` |
-| `UPSCALE_URLS` | `/app/models/upscale_models` |
-| `CLIP_URLS` | `/app/models/clip` |
-| `UNET_URLS` | `/app/models/unet` |
-| `TEXT_ENCODER_URLS` | `/app/models/text_encoders` |
-| `CUSTOM_NODE_URLS` | `/app/custom_nodes` |
-
-### URL指定形式
-
-```
-# ファイル名を指定（推奨）
-mymodel.safetensors::https://huggingface.co/xxx/resolve/main/model.safetensors
-
-# URLのみ（Content-Dispositionからファイル名取得）
-https://example.com/model.safetensors
-```
-
-### 複数指定
-
-スペースまたは改行で区切ります。
-
-```bash
--e CHECKPOINT_URLS="model1.safetensors::https://... model2.safetensors::https://..."
-```
-
-## ディレクトリ構造
-
-```
-/app/
-├── models/
-│   ├── checkpoints/
-│   ├── vae/
-│   ├── loras/
-│   ├── controlnet/
-│   ├── upscale_models/
-│   ├── clip/
-│   ├── unet/
-│   └── text_encoders/
-├── custom_nodes/
-├── input/
-├── output/
-├── start.sh              # スタンドアロン起動用
-└── start-paperspace.sh   # Paperspace Notebooks用
-```
-
-## ボリュームマウント
-
-データを永続化する場合：
+GCS を使用せずローカルボリュームでモデルを管理する場合：
 
 ```bash
 docker run --gpus all -p 8188:8188 -p 8080:8080 \
   -v $(pwd)/models:/app/models \
   -v $(pwd)/output:/app/output \
-  yourname/comfyui-allinone
+  ryokamimurasan/comfyui-allinone
 ```
+
+## カスタムノードの設定
+
+環境変数 `CUSTOM_NODE_URLS` でインストールするカスタムノードを指定できます。
+
+```bash
+-e CUSTOM_NODE_URLS="https://github.com/xxx/yyy https://github.com/aaa/bbb"
+```
+
+**デフォルトでインストールされるカスタムノード:**
+- ComfyUI-Manager
+- Civicomfy
+- ComfyUI-VideoHelperSuite
+- ComfyUI-Impact-Pack
+- ComfyUI-RMBG
+- rgthree-comfy
+- ComfyUI-KJNodes
+
+## GCS キャッシュ設定
+
+gcsfuse は以下のキャッシュ設定で動作します：
+
+| 設定 | 値 | 説明 |
+|------|-----|------|
+| file-cache-max-size-mb | -1 | 無制限（ディスク容量まで） |
+| stat-cache-ttl | 1h | メタデータキャッシュ1時間 |
+| type-cache-ttl | 1h | ディレクトリキャッシュ1時間 |
+
+起動時にバックグラウンドでモデルをプリフェッチし、ローカルキャッシュに保存します。
 
 ## ビルド
 
