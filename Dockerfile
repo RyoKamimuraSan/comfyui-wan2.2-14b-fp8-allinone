@@ -1,6 +1,6 @@
 # ============================================
 # ComfyUI All-in-One Docker Image
-# モデル・カスタムノードはコンテナ起動時にダウンロード
+# モデルはGCSからマウント、カスタムノードは起動時にダウンロード
 # ============================================
 
 # ============================================
@@ -13,32 +13,6 @@ FROM pytorch/pytorch:2.9.1-cuda12.6-cudnn9-runtime
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
-
-# ============================================
-# モデルダウンロードURL設定（環境変数で上書き可能）
-# 複数指定する場合はスペースまたは改行で区切る
-#
-# 書式:
-#   URLのみ: https://example.com/model.safetensors
-#   ファイル名指定: mymodel.safetensors::https://example.com/xxx
-# ============================================
-ENV CHECKPOINT_URLS="\
-Wan2.2_Remix_NSFW_i2v_14b_high_lighting_v2.0.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_high_lighting_v2.0.safetensors \
-Wan2.2_Remix_NSFW_i2v_14b_low_lighting_v2.0.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_low_lighting_v2.0.safetensors \
-"
-ENV VAE_URLS="\
-wan_2.1_vae.safetensors::https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors \
-"
-ENV LORA_URLS=""
-ENV CONTROLNET_URLS=""
-ENV UPSCALE_URLS="\
-4x-UltraSharp.pth::https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth \
-"
-ENV CLIP_URLS=""
-ENV UNET_URLS=""
-ENV TEXT_ENCODER_URLS="\
-nsfw_wan_umt5-xxl_bf16.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_bf16.safetensors \
-"
 
 # ============================================
 # Custom Node インストール設定（環境変数で上書き可能）
@@ -66,6 +40,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6 \
     libxext6 \
     libxrender1 \
+    gnupg \
+    lsb-release \
+    fuse \
+    && rm -rf /var/lib/apt/lists/*
+
+# ============================================
+# gcsfuseのインストール（GCSマウント用）
+# ============================================
+RUN echo "deb https://packages.cloud.google.com/apt gcsfuse-$(lsb_release -c -s) main" \
+    > /etc/apt/sources.list.d/gcsfuse.list \
+    && curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
+    && apt-get update \
+    && apt-get install -y gcsfuse \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
@@ -234,6 +221,86 @@ EOF
 RUN chmod +x /usr/local/bin/install_custom_nodes.sh
 
 # ============================================
+# GCSマウント用ディレクトリ作成
+# ============================================
+RUN mkdir -p /mnt/gcs
+
+# ============================================
+# GCSマウントスクリプト
+# ============================================
+RUN cat <<'EOF' > /usr/local/bin/mount_gcs.sh
+#!/bin/bash
+# GCSバケットをマウントしてモデルディレクトリにシンボリックリンクを作成
+
+# 環境変数チェック
+if [ -z "$GCS_BUCKET" ]; then
+    echo "[GCS] GCS_BUCKET not set, skipping GCS mount"
+    exit 0
+fi
+
+# Base64エンコードされた認証情報をデコード
+if [ -n "$GCS_KEY_BASE64" ]; then
+    echo "[GCS] Decoding service account key..."
+    echo "$GCS_KEY_BASE64" | base64 -d > /tmp/gcs-key.json
+    export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcs-key.json
+fi
+
+echo "[GCS] Mounting bucket: $GCS_BUCKET"
+
+# キャッシュディレクトリ作成
+mkdir -p /tmp/gcsfuse-cache
+
+# gcsfuseでマウント（キャッシュ有効）
+gcsfuse \
+    --file-cache-max-size-mb=-1 \
+    --file-cache-cache-file-for-range-read \
+    --stat-cache-ttl=1h \
+    --type-cache-ttl=1h \
+    --implicit-dirs \
+    --foreground=false \
+    "$GCS_BUCKET" /mnt/gcs
+
+if [ $? -ne 0 ]; then
+    echo "[GCS] ERROR: Failed to mount GCS bucket"
+    exit 1
+fi
+
+echo "[GCS] Successfully mounted $GCS_BUCKET to /mnt/gcs"
+
+# 既存のmodelsディレクトリを削除してシンボリックリンクを作成
+echo "[GCS] Creating symlinks to model directories..."
+rm -rf /app/models
+ln -sf /mnt/gcs /app/models
+
+echo "[GCS] Symlink created: /app/models -> /mnt/gcs"
+EOF
+RUN chmod +x /usr/local/bin/mount_gcs.sh
+
+# ============================================
+# モデルプリフェッチスクリプト
+# ============================================
+RUN cat <<'EOF' > /usr/local/bin/prefetch_models.sh
+#!/bin/bash
+# バックグラウンドで全モデルファイルを読み込んでキャッシュ作成
+
+if [ ! -d "/mnt/gcs" ] || [ -z "$(ls -A /mnt/gcs 2>/dev/null)" ]; then
+    echo "[PREFETCH] GCS not mounted or empty, skipping prefetch"
+    exit 0
+fi
+
+echo "[PREFETCH] Starting model cache prefetch..."
+
+find /mnt/gcs -type f \( -name "*.safetensors" -o -name "*.pth" -o -name "*.ckpt" -o -name "*.bin" \) 2>/dev/null | while read -r file; do
+    filename=$(basename "$file")
+    echo "[PREFETCH] Caching: $filename"
+    cat "$file" > /dev/null 2>&1
+done
+
+echo "[PREFETCH] Complete!"
+EOF
+RUN chmod +x /usr/local/bin/prefetch_models.sh
+
+# ============================================
 # 起動スクリプト（モデル・カスタムノードをダウンロード）
 # ============================================
 RUN cat <<'EOF' > /app/start.sh
@@ -277,7 +344,7 @@ EOF
 RUN chmod +x /app/start.sh
 
 # ============================================
-# Paperspace Notebooks 用起動スクリプト
+# Paperspace Notebooks 用起動スクリプト（GCSマウント対応）
 # ============================================
 RUN cat <<'EOF' > /app/start-paperspace.sh
 #!/bin/bash
@@ -292,17 +359,13 @@ echo ""
 echo "[1/3] Installing custom nodes..."
 /usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
 
-# モデルのダウンロード
+# GCSマウント
 echo ""
-echo "[2/3] Downloading models..."
-/usr/local/bin/download_models.sh /app/models/checkpoints "$CHECKPOINT_URLS"
-/usr/local/bin/download_models.sh /app/models/vae "$VAE_URLS"
-/usr/local/bin/download_models.sh /app/models/loras "$LORA_URLS"
-/usr/local/bin/download_models.sh /app/models/controlnet "$CONTROLNET_URLS"
-/usr/local/bin/download_models.sh /app/models/upscale_models "$UPSCALE_URLS"
-/usr/local/bin/download_models.sh /app/models/clip "$CLIP_URLS"
-/usr/local/bin/download_models.sh /app/models/unet "$UNET_URLS"
-/usr/local/bin/download_models.sh /app/models/text_encoders "$TEXT_ENCODER_URLS"
+echo "[2/3] Mounting GCS bucket..."
+/usr/local/bin/mount_gcs.sh
+
+# プリフェッチをバックグラウンドで開始
+/usr/local/bin/prefetch_models.sh &
 
 # サービス起動
 echo ""
