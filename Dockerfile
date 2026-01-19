@@ -78,11 +78,14 @@ ARG CUSTOM_NODE_URLS
 # ============================================
 # システムパッケージのインストール
 # ============================================
+# deadsnakes PPAを追加してPython 3.12をインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
     python3.12-venv \
     python3.12-dev \
-    python3-pip \
     git \
     wget \
     curl \
@@ -93,6 +96,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
+
+# pipのインストール（get-pip.pyを使用）
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
 
 # Python3.12をデフォルトに設定
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
