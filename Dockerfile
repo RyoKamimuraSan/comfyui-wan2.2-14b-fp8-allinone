@@ -86,6 +86,11 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git . \
 RUN pip install -r requirements.txt
 
 # ============================================
+# JupyterLab のインストール（Paperspace Notebooks用）
+# ============================================
+RUN pip install jupyterlab
+
+# ============================================
 # ディレクトリ構造の作成
 # ============================================
 RUN mkdir -p \
@@ -253,11 +258,64 @@ EOF
 RUN chmod +x /app/start.sh
 
 # ============================================
-# ポート公開
+# Paperspace Notebooks 用起動スクリプト
 # ============================================
-EXPOSE 8188 8080
+RUN cat <<'EOF' > /app/start-paperspace.sh
+#!/bin/bash
+set -e
+
+echo "=========================================="
+echo " ComfyUI All-in-One (Paperspace Mode)"
+echo "=========================================="
+
+# カスタムノードのインストール
+echo ""
+echo "[1/3] Installing custom nodes..."
+/usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
+
+# モデルのダウンロード
+echo ""
+echo "[2/3] Downloading models..."
+/usr/local/bin/download_models.sh /app/models/checkpoints "$CHECKPOINT_URLS"
+/usr/local/bin/download_models.sh /app/models/vae "$VAE_URLS"
+/usr/local/bin/download_models.sh /app/models/loras "$LORA_URLS"
+/usr/local/bin/download_models.sh /app/models/controlnet "$CONTROLNET_URLS"
+/usr/local/bin/download_models.sh /app/models/upscale_models "$UPSCALE_URLS"
+/usr/local/bin/download_models.sh /app/models/clip "$CLIP_URLS"
+/usr/local/bin/download_models.sh /app/models/unet "$UNET_URLS"
+/usr/local/bin/download_models.sh /app/models/text_encoders "$TEXT_ENCODER_URLS"
+
+# サービス起動
+echo ""
+echo "[3/3] Starting services..."
+echo "  - Filebrowser: http://0.0.0.0:8080 (admin/admin)"
+echo "  - ComfyUI: http://0.0.0.0:8188"
+echo "  - JupyterLab: http://0.0.0.0:8888"
+echo "=========================================="
+
+# Filebrowserをバックグラウンドで起動
+filebrowser -r /app -a 0.0.0.0 -p 8080 &
+
+# ComfyUIをバックグラウンドで起動
+cd /app && python main.py --listen 0.0.0.0 --port 8188 &
+
+# JupyterLabをフォアグラウンドで起動（Paperspace UI用）
+jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
+    --ServerApp.trust_xheaders=True \
+    --ServerApp.disable_check_xsrf=False \
+    --ServerApp.allow_remote_access=True \
+    --ServerApp.allow_origin='*' \
+    --ServerApp.allow_credentials=True
+EOF
+RUN chmod +x /app/start-paperspace.sh
 
 # ============================================
-# 起動コマンド
+# ポート公開
+# ============================================
+EXPOSE 8188 8080 8888
+
+# ============================================
+# 起動コマンド（デフォルトはスタンドアロン用）
+# Paperspace Notebooks では /app/start-paperspace.sh を指定
 # ============================================
 CMD ["/app/start.sh"]
