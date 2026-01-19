@@ -55,9 +55,10 @@ https://github.com/kijai/ComfyUI-KJNodes \
 "
 
 # ============================================
-# ベースイメージ
+# ベースイメージ（PyTorch公式イメージ）
+# Python、PyTorch、CUDA、cuDNN全て含まれる
 # ============================================
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+FROM pytorch/pytorch:2.9.1-cuda12.6-cudnn9-runtime
 
 # 環境変数
 ENV DEBIAN_FRONTEND=noninteractive
@@ -78,14 +79,7 @@ ARG CUSTOM_NODE_URLS
 # ============================================
 # システムパッケージのインストール
 # ============================================
-# deadsnakes PPAを追加してPython 3.12をインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    python3.12 \
-    python3.12-venv \
-    python3.12-dev \
     git \
     wget \
     curl \
@@ -96,16 +90,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
-
-# pipのインストール（get-pip.pyを使用）
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
-
-# Python3.12をデフォルトに設定
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
-
-# pipのアップグレード
-RUN python -m pip install --upgrade pip setuptools wheel
 
 # ============================================
 # Filebrowserのインストール
@@ -120,9 +104,6 @@ WORKDIR /app
 # ComfyUIをクローン
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git . \
     && rm -rf .git
-
-# PyTorchのインストール（CUDA 12.4対応）
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # ComfyUIの依存関係をインストール
 RUN pip install -r requirements.txt
