@@ -354,25 +354,35 @@ echo "=========================================="
 echo " ComfyUI All-in-One (Paperspace Mode)"
 echo "=========================================="
 
-# カスタムノードのインストール
+# 1. JupyterLabを先にバックグラウンドで起動（Paperspace UIが「Running」表示）
 echo ""
-echo "[1/3] Installing custom nodes..."
+echo "[1/4] Starting JupyterLab..."
+PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
+    --ServerApp.trust_xheaders=True \
+    --ServerApp.disable_check_xsrf=False \
+    --ServerApp.allow_remote_access=True \
+    --ServerApp.allow_origin='*' \
+    --ServerApp.allow_credentials=True &
+
+# 2. カスタムノードのインストール
+echo ""
+echo "[2/4] Installing custom nodes..."
 /usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
 
-# GCSマウント
+# 3. GCSマウント
 echo ""
-echo "[2/3] Mounting GCS bucket..."
+echo "[3/4] Mounting GCS bucket..."
 /usr/local/bin/mount_gcs.sh
 
 # プリフェッチをバックグラウンドで開始
 /usr/local/bin/prefetch_models.sh &
 
-# サービス起動
+# 4. サービス起動
 echo ""
-echo "[3/3] Starting services..."
+echo "[4/4] Starting services..."
+echo "  - JupyterLab: http://0.0.0.0:8888 (already running)"
 echo "  - Filebrowser: http://0.0.0.0:8080 (admin/admin)"
 echo "  - ComfyUI: http://0.0.0.0:8188"
-echo "  - JupyterLab: http://0.0.0.0:8888"
 echo "=========================================="
 
 # Filebrowserをバックグラウンドで起動
@@ -381,13 +391,8 @@ filebrowser -r /app -a 0.0.0.0 -p 8080 &
 # ComfyUIをバックグラウンドで起動
 cd /app && python main.py --listen 0.0.0.0 --port 8188 &
 
-# JupyterLabをフォアグラウンドで起動（Paperspace UI用）
-PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
-    --ServerApp.trust_xheaders=True \
-    --ServerApp.disable_check_xsrf=False \
-    --ServerApp.allow_remote_access=True \
-    --ServerApp.allow_origin='*' \
-    --ServerApp.allow_credentials=True
+# 全バックグラウンドプロセスを待機
+wait
 EOF
 RUN chmod +x /app/start-paperspace.sh
 
