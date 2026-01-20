@@ -1,6 +1,6 @@
 # ============================================
 # ComfyUI All-in-One Docker Image
-# qwen-image-edit-2511 プリインストール版
+# qwen-image-edit-2511 版
 # ============================================
 
 # ベースイメージ
@@ -11,25 +11,36 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
-# Civitai APIキー（ビルド時に指定）
-ARG CIVITAI_API_KEY=""
-ENV CIVITAI_API_KEY=${CIVITAI_API_KEY}
-
 # ============================================
 # モデルダウンロードURL設定（環境変数で上書き可能）
 # ============================================
-ENV CHECKPOINT_URLS=""
-ENV VAE_URLS=""
-ENV LORA_URLS=""
+ENV CHECKPOINT_URLS="\
+2dn_animeV3.safetensors::https://civitai.com/api/download/models/2556635?type=Model&format=SafeTensor&size=pruned&fp=fp16 \
+"
+ENV VAE_URLS="\
+qwen_image_vae.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors \
+"
+ENV LORA_URLS="\
+qwen-image_nsfw_adv_v1.0.safetensors::https://civitai.com/api/download/models/2328988?type=Model&format=SafeTensor \
+NoobV065sHyperDmd.safetensors::https://huggingface.co/Zuntan/NoobHyperDmd/resolve/main/NoobV065sHyperDmd.safetensors \
+"
 ENV CONTROLNET_URLS=""
 ENV UPSCALE_URLS="\
 4x-UltraSharp.pth::https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth \
 "
 ENV CLIP_URLS=""
 ENV UNET_URLS=""
-ENV TEXT_ENCODER_URLS=""
-ENV DIFFUSION_MODEL_URLS=""
-ENV ULTRALYTICS_BBOX_URLS=""
+ENV TEXT_ENCODER_URLS="\
+qwen_2.5_vl_7b_fp8_scaled.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors \
+"
+ENV DIFFUSION_MODEL_URLS="\
+qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors \
+"
+ENV ULTRALYTICS_BBOX_URLS="\
+Anzhc Breasts Seg v1 1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt \
+Anzhc Eyes -seg-hd.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Eyes%20-seg-hd.pt \
+Anzhc Face -seg.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Face%20-seg.pt \
+"
 
 # ============================================
 # Custom Node インストール設定（環境変数で上書き可能）
@@ -102,41 +113,6 @@ COPY scripts/start-paperspace.sh /app/
 
 # 実行権限付与
 RUN chmod +x /usr/local/bin/*.sh /app/*.sh
-
-# ============================================
-# qwen-image-edit-2511 モデルのプリインストール
-# ダウンロード失敗時は警告を出してスキップ（ビルドは継続）
-# ============================================
-
-# checkpoints (Civitai - API key required)
-RUN /usr/local/bin/download_model.sh /app/models/checkpoints \
-    "2dn_animeV3.safetensors::https://civitai.com/api/download/models/2556635?type=Model&format=SafeTensor&size=pruned&fp=fp16"
-
-# diffusion_models (HuggingFace)
-RUN /usr/local/bin/download_model.sh /app/models/diffusion_models \
-    "qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors"
-
-# loras (Civitai + HuggingFace)
-RUN /usr/local/bin/download_model.sh /app/models/loras \
-    "qwen-image_nsfw_adv_v1.0.safetensors::https://civitai.com/api/download/models/2328988?type=Model&format=SafeTensor"
-RUN /usr/local/bin/download_model.sh /app/models/loras \
-    "NoobV065sHyperDmd.safetensors::https://huggingface.co/Zuntan/NoobHyperDmd/resolve/main/NoobV065sHyperDmd.safetensors"
-
-# text_encoders (HuggingFace)
-RUN /usr/local/bin/download_model.sh /app/models/text_encoders \
-    "qwen_2.5_vl_7b_fp8_scaled.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
-
-# vae (HuggingFace)
-RUN /usr/local/bin/download_model.sh /app/models/vae \
-    "qwen_image_vae.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors"
-
-# ultralytics/bbox (HuggingFace)
-RUN /usr/local/bin/download_model.sh /app/models/ultralytics/bbox \
-    "Anzhc Breasts Seg v1 1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt"
-RUN /usr/local/bin/download_model.sh /app/models/ultralytics/bbox \
-    "Anzhc Eyes -seg-hd.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Eyes%20-seg-hd.pt"
-RUN /usr/local/bin/download_model.sh /app/models/ultralytics/bbox \
-    "Anzhc Face -seg.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Face%20-seg.pt"
 
 # ============================================
 # ポート公開

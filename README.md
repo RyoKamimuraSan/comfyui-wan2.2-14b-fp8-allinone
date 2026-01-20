@@ -96,15 +96,15 @@ ComfyUI: `http://localhost:6006`
 - ComfyUI-Frame-Interpolation
 - ComfyUI-Custom-Scripts
 
-## qwen-image-edit-2511 プリインストール版
+## qwen-image-edit-2511 版
 
-qwen-image-edit-2511 のモデルがプリインストールされたイメージ：
+qwen-image-edit-2511 用に最適化されたイメージ：
 
 ```bash
 docker pull ryokamimurasan/comfyui-qwen-image-edit-2511
 ```
 
-### プリインストールモデル
+### デフォルトでダウンロードされるモデル
 
 | カテゴリ | モデル名 | ソース |
 |---------|---------|--------|
@@ -122,15 +122,20 @@ docker pull ryokamimurasan/comfyui-qwen-image-edit-2511
 ### ビルド
 
 ```bash
-docker build \
-  --build-arg CIVITAI_API_KEY=your_api_key \
-  -f Dockerfile.qwen-image-edit-2511 \
-  -t comfyui-qwen-image-edit-2511 .
+docker build -f Dockerfile.qwen-image-edit-2511 -t comfyui-qwen-image-edit-2511 .
+```
+
+### 実行
+
+```bash
+docker run --gpus all -p 6006:6006 \
+  -e CIVITAI_API_KEY=your_api_key \
+  ryokamimurasan/comfyui-qwen-image-edit-2511
 ```
 
 **注意:**
-- `CIVITAI_API_KEY` が必要です（Civitaiモデルダウンロード用）
-- APIキーがない場合、Civitaiモデルはスキップされビルドは継続します
+- Civitaiモデルをダウンロードするには、実行時に `CIVITAI_API_KEY` 環境変数が必要です
+- APIキーがない場合、Civitaiモデルはスキップされます
 
 ## ビルド
 

@@ -64,8 +64,13 @@ echo "[4/5] Downloading models..."
 /usr/local/bin/download_models.sh /app/models/checkpoints "$CHECKPOINT_URLS" &
 /usr/local/bin/download_models.sh /app/models/vae "$VAE_URLS" &
 /usr/local/bin/download_models.sh /app/models/loras "$LORA_URLS" &
+/usr/local/bin/download_models.sh /app/models/controlnet "$CONTROLNET_URLS" &
 /usr/local/bin/download_models.sh /app/models/upscale_models "$UPSCALE_URLS" &
+/usr/local/bin/download_models.sh /app/models/clip "$CLIP_URLS" &
+/usr/local/bin/download_models.sh /app/models/unet "$UNET_URLS" &
 /usr/local/bin/download_models.sh /app/models/text_encoders "$TEXT_ENCODER_URLS" &
+/usr/local/bin/download_models.sh /app/models/diffusion_models "$DIFFUSION_MODEL_URLS" &
+/usr/local/bin/download_models.sh /app/models/ultralytics/bbox "$ULTRALYTICS_BBOX_URLS" &
 
 # 5. サービス起動
 echo ""
