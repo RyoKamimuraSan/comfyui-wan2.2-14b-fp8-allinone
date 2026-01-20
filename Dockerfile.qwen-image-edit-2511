@@ -34,7 +34,7 @@ ENV TEXT_ENCODER_URLS="\
 qwen_2.5_vl_7b_fp8_scaled.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors \
 "
 ENV DIFFUSION_MODEL_URLS="\
-qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors \
+qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_comfyui_4steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_comfyui_4steps_v1.0.safetensors \
 "
 ENV ULTRALYTICS_BBOX_URLS="\
 Anzhc Breasts Seg v1 1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt \
