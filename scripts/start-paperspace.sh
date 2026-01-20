@@ -16,22 +16,36 @@ PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-brows
     --ServerApp.allow_origin='*' \
     --ServerApp.allow_credentials=True &
 
-# 2. /storage が存在する場合、output を永続化
+# 2. /storage が存在する場合、シンボリックリンクを作成
 echo ""
 echo "[2/5] Setting up storage..."
 if [ -d "/storage" ]; then
-    echo "[STORAGE] Setting up output persistence..."
+    echo "[STORAGE] Setting up storage symlinks..."
+
+    # /storage/output ディレクトリを作成
+    mkdir -p /storage/output
+    # /app/output -> /storage/output
     if [ -d "/app/output" ] && [ ! -L "/app/output" ]; then
         rm -rf /app/output
     fi
     if [ ! -L "/app/output" ]; then
-        ln -s /storage /app/output
-        echo "[STORAGE] /app/output -> /storage (symlink created)"
-    else
-        echo "[STORAGE] /app/output -> /storage (symlink exists)"
+        ln -s /storage/output /app/output
+        echo "[STORAGE] /app/output -> /storage/output"
+    fi
+
+    # /storage/workflow ディレクトリを作成
+    mkdir -p /storage/workflow
+    # /app/user/default/workflows -> /storage/workflow
+    mkdir -p /app/user/default
+    if [ -d "/app/user/default/workflows" ] && [ ! -L "/app/user/default/workflows" ]; then
+        rm -rf /app/user/default/workflows
+    fi
+    if [ ! -L "/app/user/default/workflows" ]; then
+        ln -s /storage/workflow /app/user/default/workflows
+        echo "[STORAGE] /app/user/default/workflows -> /storage/workflow"
     fi
 else
-    echo "[STORAGE] /storage not mounted, using local /app/output"
+    echo "[STORAGE] /storage not mounted, using local directories"
 fi
 
 # 3. カスタムノードのインストール

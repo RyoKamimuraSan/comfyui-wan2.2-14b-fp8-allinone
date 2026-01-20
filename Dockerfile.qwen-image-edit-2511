@@ -1,12 +1,9 @@
 # ============================================
 # ComfyUI All-in-One Docker Image
-# モデルは起動時にダウンロード、カスタムノードも起動時にインストール
+# qwen-image-edit-2511 プリインストール版
 # ============================================
 
-# ============================================
-# ベースイメージ（PyTorch公式イメージ）
-# Python、PyTorch、CUDA、cuDNN全て含まれる
-# ============================================
+# ベースイメージ
 FROM pytorch/pytorch:2.9.1-cuda12.6-cudnn9-runtime
 
 # 環境変数
@@ -14,17 +11,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
+# Civitai APIキー（ビルド時に指定）
+ARG CIVITAI_API_KEY=""
+ENV CIVITAI_API_KEY=${CIVITAI_API_KEY}
+
 # ============================================
 # モデルダウンロードURL設定（環境変数で上書き可能）
-# 書式: ファイル名::URL（スペースまたは改行区切り）
 # ============================================
-ENV CHECKPOINT_URLS="\
-Wan2.2_Remix_NSFW_i2v_14b_high_lighting_fp8_e4m3fn_v2.1.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_high_lighting_fp8_e4m3fn_v2.1.safetensors \
-Wan2.2_Remix_NSFW_i2v_14b_low_lighting_fp8_e4m3fn_v2.1.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_low_lighting_fp8_e4m3fn_v2.1.safetensors \
-"
-ENV VAE_URLS="\
-wan_2.1_vae.safetensors::https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors \
-"
+ENV CHECKPOINT_URLS=""
+ENV VAE_URLS=""
 ENV LORA_URLS=""
 ENV CONTROLNET_URLS=""
 ENV UPSCALE_URLS="\
@@ -32,9 +27,7 @@ ENV UPSCALE_URLS="\
 "
 ENV CLIP_URLS=""
 ENV UNET_URLS=""
-ENV TEXT_ENCODER_URLS="\
-nsfw_wan_umt5-xxl_fp8_scaled.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_fp8_scaled.safetensors \
-"
+ENV TEXT_ENCODER_URLS=""
 ENV DIFFUSION_MODEL_URLS=""
 ENV ULTRALYTICS_BBOX_URLS=""
 
@@ -111,12 +104,46 @@ COPY scripts/start-paperspace.sh /app/
 RUN chmod +x /usr/local/bin/*.sh /app/*.sh
 
 # ============================================
+# qwen-image-edit-2511 モデルのプリインストール
+# ダウンロード失敗時は警告を出してスキップ（ビルドは継続）
+# ============================================
+
+# checkpoints (Civitai - API key required)
+RUN /usr/local/bin/download_model.sh /app/models/checkpoints \
+    "2dn_animeV3.safetensors::https://civitai.com/api/download/models/2556635?type=Model&format=SafeTensor&size=pruned&fp=fp16"
+
+# diffusion_models (HuggingFace)
+RUN /usr/local/bin/download_model.sh /app/models/diffusion_models \
+    "qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors"
+
+# loras (Civitai + HuggingFace)
+RUN /usr/local/bin/download_model.sh /app/models/loras \
+    "qwen-image_nsfw_adv_v1.0.safetensors::https://civitai.com/api/download/models/2328988?type=Model&format=SafeTensor"
+RUN /usr/local/bin/download_model.sh /app/models/loras \
+    "NoobV065sHyperDmd.safetensors::https://huggingface.co/Zuntan/NoobHyperDmd/resolve/main/NoobV065sHyperDmd.safetensors"
+
+# text_encoders (HuggingFace)
+RUN /usr/local/bin/download_model.sh /app/models/text_encoders \
+    "qwen_2.5_vl_7b_fp8_scaled.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+
+# vae (HuggingFace)
+RUN /usr/local/bin/download_model.sh /app/models/vae \
+    "qwen_image_vae.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors"
+
+# ultralytics/bbox (HuggingFace)
+RUN /usr/local/bin/download_model.sh /app/models/ultralytics/bbox \
+    "Anzhc Breasts Seg v1 1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt"
+RUN /usr/local/bin/download_model.sh /app/models/ultralytics/bbox \
+    "Anzhc Eyes -seg-hd.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Eyes%20-seg-hd.pt"
+RUN /usr/local/bin/download_model.sh /app/models/ultralytics/bbox \
+    "Anzhc Face -seg.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Face%20-seg.pt"
+
+# ============================================
 # ポート公開
 # ============================================
 EXPOSE 6006 8888
 
 # ============================================
 # 起動コマンド（デフォルトはスタンドアロン用）
-# Paperspace Notebooks では /app/start-paperspace.sh を指定
 # ============================================
 CMD ["/app/start.sh"]

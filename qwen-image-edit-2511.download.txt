@@ -1,0 +1,23 @@
+checkpoints
+[2dn_animeV3.safetensors]
+https://civitai.com/api/download/models/2556635?type=Model&format=SafeTensor&size=pruned&fp=fp16
+
+diffusion_models
+https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors?download=true
+
+lora
+[qwen-image_nsfw_adv_v1.0.safetensors]
+https://civitai.com/api/download/models/2328988?type=Model&format=SafeTensor
+
+https://huggingface.co/Zuntan/NoobHyperDmd/resolve/main/NoobV065sHyperDmd.safetensors?download=true
+
+text encoder
+https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors?download=true
+
+vae
+https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors?download=true
+
+yolo ( models/ultalytics/bbox )
+https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt?download=true
+https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Eyes%20-seg-hd.pt?download=true
+https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Face%20-seg.pt?download=true

@@ -48,6 +48,17 @@ docker run --gpus all -p 6006:6006 \
 
 ComfyUI: `http://localhost:6006`
 
+## Storage 永続化
+
+`/storage` ディレクトリがマウントされている場合、以下のシンボリックリンクが自動作成されます：
+
+| ローカルパス | リンク先 |
+|-------------|---------|
+| `/app/output` | `/storage/output` |
+| `/app/user/default/workflows` | `/storage/workflow` |
+
+これにより、出力ファイルとワークフローが永続化されます。
+
 ## モデルの設定
 
 環境変数でダウンロードするモデルURLを指定できます。
@@ -84,6 +95,23 @@ ComfyUI: `http://localhost:6006`
 - ComfyUI-KJNodes
 - ComfyUI-Frame-Interpolation
 - ComfyUI-Custom-Scripts
+
+## qwen-image-edit-2511 プリインストール版
+
+qwen-image-edit-2511 のモデルがプリインストールされたイメージ：
+
+```bash
+docker pull ryokamimurasan/comfyui-qwen-image-edit-2511
+```
+
+### ビルド
+
+```bash
+docker build \
+  --build-arg CIVITAI_API_KEY=your_api_key \
+  -f Dockerfile.qwen-image-edit-2511 \
+  -t comfyui-qwen-image-edit-2511 .
+```
 
 ## ビルド
 

@@ -17,6 +17,19 @@ fi
 
 filepath="$outdir/$filename"
 
+# Civitai URL判定とトークン付与
+if [[ "$url" == *"civitai.com"* ]]; then
+    if [ -n "$CIVITAI_API_KEY" ]; then
+        if [[ "$url" == *"?"* ]]; then
+            url="${url}&token=${CIVITAI_API_KEY}"
+        else
+            url="${url}?token=${CIVITAI_API_KEY}"
+        fi
+    else
+        echo "[WARN] CIVITAI_API_KEY not set. Civitai download may fail: $filename"
+    fi
+fi
+
 # 既にダウンロード済みならスキップ
 if [ -f "$filepath" ]; then
     echo "[SKIP] Already exists: $filename"
