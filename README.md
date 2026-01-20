@@ -104,6 +104,21 @@ qwen-image-edit-2511 のモデルがプリインストールされたイメー�
 docker pull ryokamimurasan/comfyui-qwen-image-edit-2511
 ```
 
+### プリインストールモデル
+
+| カテゴリ | モデル名 | ソース |
+|---------|---------|--------|
+| checkpoints | 2dn_animeV3.safetensors | Civitai |
+| diffusion_models | qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors | HuggingFace |
+| loras | qwen-image_nsfw_adv_v1.0.safetensors | Civitai |
+| loras | NoobV065sHyperDmd.safetensors | HuggingFace |
+| text_encoders | qwen_2.5_vl_7b_fp8_scaled.safetensors | HuggingFace |
+| vae | qwen_image_vae.safetensors | HuggingFace |
+| upscale_models | 4x-UltraSharp.pth | HuggingFace |
+| ultralytics/bbox | Anzhc Breasts Seg v1 1024m.pt | HuggingFace |
+| ultralytics/bbox | Anzhc Eyes -seg-hd.pt | HuggingFace |
+| ultralytics/bbox | Anzhc Face -seg.pt | HuggingFace |
+
 ### ビルド
 
 ```bash
@@ -112,6 +127,10 @@ docker build \
   -f Dockerfile.qwen-image-edit-2511 \
   -t comfyui-qwen-image-edit-2511 .
 ```
+
+**注意:**
+- `CIVITAI_API_KEY` が必要です（Civitaiモデルダウンロード用）
+- APIキーがない場合、Civitaiモデルはスキップされビルドは継続します
 
 ## ビルド
 
