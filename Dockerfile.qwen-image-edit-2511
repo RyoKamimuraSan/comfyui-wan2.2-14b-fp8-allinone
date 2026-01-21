@@ -37,9 +37,9 @@ ENV DIFFUSION_MODEL_URLS="\
 qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_comfyui_4steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_comfyui_4steps_v1.0.safetensors \
 "
 ENV ULTRALYTICS_BBOX_URLS="\
-Anzhc Breasts Seg v1 1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt \
-Anzhc Eyes -seg-hd.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Eyes%20-seg-hd.pt \
-Anzhc Face -seg.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Face%20-seg.pt \
+Anzhc-Breasts-Seg-v1-1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt \
+Anzhc-Eyes-seg-hd.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Eyes%20-seg-hd.pt \
+Anzhc-Face-seg.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Face%20-seg.pt \
 "
 
 # ============================================
@@ -50,6 +50,8 @@ https://github.com/Comfy-Org/ComfyUI-Manager \
 https://github.com/MoonGoblinDev/Civicomfy \
 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite \
 https://github.com/ltdrdata/ComfyUI-Impact-Pack \
+https://github.com/ltdrdata/ComfyUI-Impact-Subpack \
+https://github.com/Acly/comfyui-inpaint-nodes \
 https://github.com/1038lab/ComfyUI-RMBG \
 https://github.com/rgthree/rgthree-comfy \
 https://github.com/kijai/ComfyUI-KJNodes \
