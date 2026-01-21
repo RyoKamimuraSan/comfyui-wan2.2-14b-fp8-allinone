@@ -9,7 +9,7 @@ on:
       - 'scripts/**'
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-qwen-image-edit-2511
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-qwen-image-edit-2511-paperspace-nb
 
 jobs:
   build-and-push:
