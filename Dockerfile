@@ -78,8 +78,9 @@ WORKDIR /app
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git . \
     && rm -rf .git
 
-# ComfyUIの依存関係 + JupyterLab をインストール
-RUN pip install -r requirements.txt jupyterlab && \
+# ComfyUIの依存関係 + JupyterLab + supervisor をインストール
+RUN pip install -r requirements.txt jupyterlab supervisor && \
+    mkdir -p /var/log/supervisor && \
     find /opt/conda/lib/python*/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 # ============================================
@@ -108,6 +109,10 @@ COPY scripts/download_models.sh /usr/local/bin/
 COPY scripts/install_custom_nodes.sh /usr/local/bin/
 COPY scripts/start.sh /app/
 COPY scripts/start-paperspace.sh /app/
+
+# supervisord設定ファイルをコピー
+COPY scripts/supervisord.conf /etc/supervisor/supervisord.conf
+COPY scripts/supervisord-paperspace.conf /etc/supervisor/supervisord-paperspace.conf
 
 # 実行権限付与
 RUN chmod +x /usr/local/bin/*.sh /app/*.sh

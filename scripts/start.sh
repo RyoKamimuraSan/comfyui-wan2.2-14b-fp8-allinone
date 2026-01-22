@@ -67,5 +67,5 @@ echo "[4/4] Starting services..."
 echo "  - ComfyUI: http://0.0.0.0:6006"
 echo "=========================================="
 
-# ComfyUIを起動
-python main.py --listen 0.0.0.0 --port 6006 --fp8_e4m3fn-unet --fp8_e4m3fn-text-enc
+# supervisordでComfyUIを起動（自動再起動有効）
+exec supervisord -c /etc/supervisor/supervisord.conf
