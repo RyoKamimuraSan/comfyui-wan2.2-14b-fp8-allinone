@@ -18,10 +18,7 @@ ENV PIP_NO_CACHE_DIR=1
 # モデルダウンロードURL設定（環境変数で上書き可能）
 # 書式: ファイル名::URL（スペースまたは改行区切り）
 # ============================================
-ENV CHECKPOINT_URLS="\
-Wan2.2_Remix_NSFW_i2v_14b_high_lighting_fp8_e4m3fn_v2.1.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_high_lighting_fp8_e4m3fn_v2.1.safetensors \
-Wan2.2_Remix_NSFW_i2v_14b_low_lighting_fp8_e4m3fn_v2.1.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_low_lighting_fp8_e4m3fn_v2.1.safetensors \
-"
+ENV CHECKPOINT_URLS=""
 ENV VAE_URLS="\
 wan_2.1_vae.safetensors::https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors \
 "
@@ -34,8 +31,12 @@ ENV CLIP_URLS=""
 ENV UNET_URLS=""
 ENV TEXT_ENCODER_URLS="\
 nsfw_wan_umt5-xxl_fp8_scaled.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_fp8_scaled.safetensors \
+nsfw_wan_umt5-xxl_bf16.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_bf16.safetensors \
 "
-ENV DIFFUSION_MODEL_URLS=""
+ENV DIFFUSION_MODEL_URLS="\
+Wan2.2_Remix_NSFW_i2v_14b_high_lighting_fp8_e4m3fn_v2.1.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_high_lighting_fp8_e4m3fn_v2.1.safetensors \
+Wan2.2_Remix_NSFW_i2v_14b_low_lighting_fp8_e4m3fn_v2.1.safetensors::https://huggingface.co/FX-FeiHou/wan2.2-Remix/resolve/main/NSFW/Wan2.2_Remix_NSFW_i2v_14b_low_lighting_fp8_e4m3fn_v2.1.safetensors \
+"
 ENV ULTRALYTICS_BBOX_URLS=""
 
 # ============================================
@@ -51,6 +52,7 @@ https://github.com/rgthree/rgthree-comfy \
 https://github.com/kijai/ComfyUI-KJNodes \
 https://github.com/Fannovel16/ComfyUI-Frame-Interpolation \
 https://github.com/pythongosssss/ComfyUI-Custom-Scripts \
+https://github.com/kijai/ComfyUI-WanVideoWrapper \
 "
 
 # ============================================
