@@ -23,8 +23,7 @@ ENV VAE_URLS="\
 wan_2.1_vae.safetensors::https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors \
 "
 ENV LORA_URLS="\
-Wan22_A14B_T2V_HIGH_Lightning_4steps_lora_250928_rank128_fp16.safetensors::https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/LoRAs/Wan22-Lightning/Wan22_A14B_T2V_HIGH_Lightning_4steps_lora_250928_rank128_fp16.safetensors \
-Wan22_A14B_T2V_LOW_Lightning_4steps_lora_250928_rank64_fp16.safetensors::https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/LoRAs/Wan22-Lightning/Wan22_A14B_T2V_LOW_Lightning_4steps_lora_250928_rank64_fp16.safetensors \
+lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank128_bf16.safetensors::https://huggingface.co/Kijai/WanVideo_comfy/resolve/709844db75d2e15582cf204e9a0b5e12b23a35dd/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank128_bf16.safetensors \
 "
 ENV CONTROLNET_URLS=""
 ENV UPSCALE_URLS="\
