@@ -114,6 +114,7 @@ COPY scripts/download_models.sh /usr/local/bin/
 COPY scripts/install_custom_nodes.sh /usr/local/bin/
 COPY scripts/start.sh /app/
 COPY scripts/start-paperspace.sh /app/
+COPY scripts/init-civicomfy-apikey.js /usr/local/bin/
 
 # supervisord設定ファイルをコピー
 COPY scripts/supervisord.conf /etc/supervisor/supervisord.conf
