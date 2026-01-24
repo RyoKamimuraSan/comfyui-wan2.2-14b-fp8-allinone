@@ -70,6 +70,7 @@ RUN git clone --depth 1 https://github.com/Comfy-Org/ComfyUI-Manager && \
     git clone --depth 1 https://github.com/MoonGoblinDev/Civicomfy && \
     git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite && \
     git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Impact-Pack && \
+    cd ComfyUI-Impact-Pack && git submodule update --init --depth 1 && cd .. && \
     git clone --depth 1 https://github.com/1038lab/ComfyUI-RMBG && \
     git clone --depth 1 https://github.com/rgthree/rgthree-comfy && \
     git clone --depth 1 https://github.com/kijai/ComfyUI-KJNodes && \
