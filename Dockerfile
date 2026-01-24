@@ -96,6 +96,7 @@ WORKDIR /app
 COPY scripts/download_model.sh /usr/local/bin/
 COPY scripts/download_models.sh /usr/local/bin/
 COPY scripts/install_custom_nodes.sh /usr/local/bin/
+COPY scripts/keepalive.sh /usr/local/bin/
 COPY scripts/start.sh /app/
 COPY scripts/start-paperspace.sh /app/
 

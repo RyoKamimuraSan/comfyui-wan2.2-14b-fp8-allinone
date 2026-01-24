@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Enable keepalive for Paperspace idle shutdown prevention
+export ENABLE_KEEPALIVE=true
+
 # Start services immediately (JupyterLab + ComfyUI)
 supervisord -c /etc/supervisor/supervisord-paperspace.conf &
 
