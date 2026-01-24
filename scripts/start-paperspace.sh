@@ -5,20 +5,9 @@ echo "=========================================="
 echo " ComfyUI All-in-One (Paperspace Mode)"
 echo "=========================================="
 
-# 1. JupyterLabを最初にバックグラウンドで起動（Paperspace UIが「Running」表示）
+# 1. /storage が存在する場合、シンボリックリンクを作成
 echo ""
-echo "[1/5] Starting JupyterLab..."
-PIP_DISABLE_PIP_VERSION_CHECK=1 jupyter lab --allow-root --ip=0.0.0.0 --no-browser \
-    --notebook-dir=/app \
-    --ServerApp.trust_xheaders=True \
-    --ServerApp.disable_check_xsrf=False \
-    --ServerApp.allow_remote_access=True \
-    --ServerApp.allow_origin='*' \
-    --ServerApp.allow_credentials=True &
-
-# 2. /storage が存在する場合、シンボリックリンクを作成
-echo ""
-echo "[2/5] Setting up storage..."
+echo "[1/4] Setting up storage..."
 if [ -d "/storage" ]; then
     echo "[STORAGE] Setting up storage symlinks..."
 
@@ -48,9 +37,9 @@ else
     echo "[STORAGE] /storage not mounted, using local directories"
 fi
 
-# 3. 追加カスタムノードのインストール（EXTRA_CUSTOM_NODE_URLSがある場合のみ）
+# 2. 追加カスタムノードのインストール（EXTRA_CUSTOM_NODE_URLSがある場合のみ）
 echo ""
-echo "[3/5] Checking for extra custom nodes..."
+echo "[2/4] Checking for extra custom nodes..."
 if [ -n "$EXTRA_CUSTOM_NODE_URLS" ]; then
     echo "[CUSTOM_NODES] Installing extra custom nodes..."
     /usr/local/bin/install_custom_nodes.sh "$EXTRA_CUSTOM_NODE_URLS"
@@ -70,9 +59,9 @@ if [ -n "$CIVITAI_API_KEY" ] && [ -d "/app/custom_nodes/Civicomfy/web/js" ]; the
         > /app/custom_nodes/Civicomfy/web/js/init-apikey.js
 fi
 
-# 4. モデルダウンロード（バックグラウンド、並列ダウンロード対応）
+# 3. モデルダウンロード（バックグラウンド、並列ダウンロード対応）
 echo ""
-echo "[4/5] Downloading models..."
+echo "[3/4] Downloading models..."
 /usr/local/bin/download_models.sh /app/models/checkpoints "$CHECKPOINT_URLS" &
 /usr/local/bin/download_models.sh /app/models/vae "$VAE_URLS" &
 /usr/local/bin/download_models.sh /app/models/loras "$LORA_URLS" &
@@ -85,12 +74,12 @@ echo "[4/5] Downloading models..."
 /usr/local/bin/download_models.sh /app/models/diffusion_models "$DIFFUSION_MODEL_URLS" &
 /usr/local/bin/download_models.sh /app/models/ultralytics/bbox "$ULTRALYTICS_BBOX_URLS" &
 
-# 5. ComfyUI起動
+# 4. サービス起動（ComfyUI + JupyterLab）
 echo ""
-echo "[5/5] Starting ComfyUI..."
+echo "[4/4] Starting services..."
 echo "  - JupyterLab: http://0.0.0.0:8888"
 echo "  - ComfyUI: http://0.0.0.0:6006 (TensorBoard URL)"
 echo "=========================================="
 
-# supervisordでComfyUIを起動（自動再起動有効）
+# supervisordでComfyUIとJupyterLabを起動（自動再起動有効）
 exec supervisord -c /etc/supervisor/supervisord-paperspace.conf
