@@ -128,6 +128,7 @@ qwen_image_vae.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/
 ENV LORA_URLS="\
 qwen-image_nsfw_adv_v1.0.safetensors::https://civitai.com/api/download/models/2328988?type=Model&format=SafeTensor \
 NoobV065sHyperDmd.safetensors::https://huggingface.co/Zuntan/NoobHyperDmd/resolve/main/NoobV065sHyperDmd.safetensors \
+Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors \
 "
 ENV CONTROLNET_URLS=""
 ENV UPSCALE_URLS="\
@@ -139,7 +140,7 @@ ENV TEXT_ENCODER_URLS="\
 qwen_2.5_vl_7b_fp8_scaled.safetensors::https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors \
 "
 ENV DIFFUSION_MODEL_URLS="\
-qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_comfyui_4steps_v1.0.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_comfyui_4steps_v1.0.safetensors \
+qwen_image_edit_2511_fp8_e4m3fn_scaled.safetensors::https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled.safetensors \
 "
 ENV ULTRALYTICS_BBOX_URLS="\
 Anzhc-Breasts-Seg-v1-1024m.pt::https://huggingface.co/Anzhc/Anzhcs_YOLOs/resolve/main/Anzhc%20Breasts%20Seg%20v1%201024m.pt \

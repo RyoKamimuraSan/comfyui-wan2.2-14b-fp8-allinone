@@ -3,13 +3,15 @@ checkpoints
 https://civitai.com/api/download/models/2556635?type=Model&format=SafeTensor&size=pruned&fp=fp16
 
 diffusion_models
-https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors?download=true
+https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/qwen_image_edit_2511_fp8_e4m3fn_scaled.safetensors?download=true
 
 lora
 [qwen-image_nsfw_adv_v1.0.safetensors]
 https://civitai.com/api/download/models/2328988?type=Model&format=SafeTensor
 
 https://huggingface.co/Zuntan/NoobHyperDmd/resolve/main/NoobV065sHyperDmd.safetensors?download=true
+
+https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors?download=true
 
 text encoder
 https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors?download=true
