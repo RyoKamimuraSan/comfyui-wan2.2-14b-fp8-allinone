@@ -46,10 +46,15 @@ else
     echo "[STORAGE] No external storage detected, using local directories"
 fi
 
-# カスタムノードのインストール
+# 追加カスタムノードのインストール（EXTRA_CUSTOM_NODE_URLSがある場合のみ）
 echo ""
-echo "[2/4] Installing custom nodes..."
-/usr/local/bin/install_custom_nodes.sh "$CUSTOM_NODE_URLS"
+echo "[2/4] Checking for extra custom nodes..."
+if [ -n "$EXTRA_CUSTOM_NODE_URLS" ]; then
+    echo "[CUSTOM_NODES] Installing extra custom nodes..."
+    /usr/local/bin/install_custom_nodes.sh "$EXTRA_CUSTOM_NODE_URLS"
+else
+    echo "[CUSTOM_NODES] No extra custom nodes to install (pre-installed at build time)"
+fi
 
 # RIFE モデルのダウンロード（Frame-Interpolation用）
 mkdir -p /app/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife
@@ -63,7 +68,7 @@ if [ -n "$CIVITAI_API_KEY" ] && [ -d "/app/custom_nodes/Civicomfy/web/js" ]; the
         > /app/custom_nodes/Civicomfy/web/js/init-apikey.js
 fi
 
-# モデルのダウンロード
+# モデルのダウンロード（並列実行）
 echo ""
 echo "[3/4] Downloading models..."
 /usr/local/bin/download_models.sh /app/models/checkpoints "$CHECKPOINT_URLS"

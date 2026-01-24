@@ -37,7 +37,7 @@ if [ -f "$filepath" ]; then
 fi
 
 echo "[DOWNLOAD] $filename"
-if aria2c -x5 \
+if aria2c -x16 -s16 -k1M \
     --connect-timeout=60 \
     --timeout=600 \
     --max-tries=3 \
