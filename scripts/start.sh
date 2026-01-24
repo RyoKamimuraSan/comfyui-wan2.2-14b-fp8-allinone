@@ -5,36 +5,45 @@ echo "=========================================="
 echo " ComfyUI All-in-One Starting..."
 echo "=========================================="
 
-# /storage が存在する場合、シンボリックリンクを作成
+# ストレージパスの自動検出（Paperspace: /storage, RunPod: /workspace）
 echo ""
 echo "[1/4] Setting up storage..."
+STORAGE_PATH=""
 if [ -d "/storage" ]; then
+    STORAGE_PATH="/storage"
+    echo "[STORAGE] Detected Paperspace storage: /storage"
+elif [ -d "/workspace" ]; then
+    STORAGE_PATH="/workspace"
+    echo "[STORAGE] Detected RunPod storage: /workspace"
+fi
+
+if [ -n "$STORAGE_PATH" ]; then
     echo "[STORAGE] Setting up storage symlinks..."
 
-    # /storage/output ディレクトリを作成
-    mkdir -p /storage/output
-    # /app/output -> /storage/output
+    # $STORAGE_PATH/output ディレクトリを作成
+    mkdir -p "$STORAGE_PATH/output"
+    # /app/output -> $STORAGE_PATH/output
     if [ -d "/app/output" ] && [ ! -L "/app/output" ]; then
         rm -rf /app/output
     fi
     if [ ! -L "/app/output" ]; then
-        ln -s /storage/output /app/output
-        echo "[STORAGE] /app/output -> /storage/output"
+        ln -s "$STORAGE_PATH/output" /app/output
+        echo "[STORAGE] /app/output -> $STORAGE_PATH/output"
     fi
 
-    # /storage/workflow ディレクトリを作成
-    mkdir -p /storage/workflow
-    # /app/user/default/workflows -> /storage/workflow
+    # $STORAGE_PATH/workflow ディレクトリを作成
+    mkdir -p "$STORAGE_PATH/workflow"
+    # /app/user/default/workflows -> $STORAGE_PATH/workflow
     mkdir -p /app/user/default
     if [ -d "/app/user/default/workflows" ] && [ ! -L "/app/user/default/workflows" ]; then
         rm -rf /app/user/default/workflows
     fi
     if [ ! -L "/app/user/default/workflows" ]; then
-        ln -s /storage/workflow /app/user/default/workflows
-        echo "[STORAGE] /app/user/default/workflows -> /storage/workflow"
+        ln -s "$STORAGE_PATH/workflow" /app/user/default/workflows
+        echo "[STORAGE] /app/user/default/workflows -> $STORAGE_PATH/workflow"
     fi
 else
-    echo "[STORAGE] /storage not mounted, using local directories"
+    echo "[STORAGE] No external storage detected, using local directories"
 fi
 
 # カスタムノードのインストール
