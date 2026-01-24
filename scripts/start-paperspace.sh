@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Start services immediately (JupyterLab + ComfyUI)
+supervisord -c /etc/supervisor/supervisord-paperspace.conf &
+
 echo "=========================================="
 echo " ComfyUI All-in-One (Paperspace Mode)"
 echo "=========================================="
@@ -81,5 +84,5 @@ echo "  - JupyterLab: http://0.0.0.0:8888"
 echo "  - ComfyUI: http://0.0.0.0:6006 (TensorBoard URL)"
 echo "=========================================="
 
-# supervisordでComfyUIとJupyterLabを起動（自動再起動有効）
-exec supervisord -c /etc/supervisor/supervisord-paperspace.conf
+# Wait for supervisord (already started at script beginning)
+wait
