@@ -67,7 +67,7 @@ RUN git clone --depth 1 https://github.com/Comfy-Org/ComfyUI-Manager && \
     git clone --depth 1 https://github.com/MoonGoblinDev/Civicomfy && \
     git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite && \
     git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Impact-Pack && \
-    git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Impact-Subpack && \
+    cd ComfyUI-Impact-Pack && git submodule update --init --depth 1 && cd .. && \
     git clone --depth 1 https://github.com/Acly/comfyui-inpaint-nodes && \
     git clone --depth 1 https://github.com/1038lab/ComfyUI-RMBG && \
     git clone --depth 1 https://github.com/rgthree/rgthree-comfy && \
@@ -87,6 +87,9 @@ RUN for dir in */; do \
     find /opt/conda/lib/python*/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 WORKDIR /app
+
+# Wildcards ファイルをコピー
+COPY wildcards/ /app/custom_nodes/ComfyUI-Impact-Pack/wildcards/
 
 # ============================================
 # スクリプトをコピー

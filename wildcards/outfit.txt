@@ -1,0 +1,113 @@
+school uniform, serafuku
+school uniform, blazer
+maid outfit, frilled apron
+gothic maid
+french maid
+wedding dress
+white dress
+black dress
+red dress
+blue dress
+pink dress
+sundress
+summer dress
+cocktail dress
+evening gown
+ball gown
+china dress
+qipao, side slit
+kimono
+furisode
+yukata
+miko outfit
+shrine maiden
+nun outfit
+nurse outfit
+doctor coat
+office lady, suit, pencil skirt
+business suit
+secretary outfit
+waitress uniform
+bunny girl, playboy bunny
+cat lingerie
+cheerleader
+gym uniform, buruma
+school swimsuit
+competition swimsuit
+bikini
+micro bikini
+string bikini
+one-piece swimsuit
+leotard
+ballet outfit, tutu
+tennis outfit
+volleyball uniform
+basketball uniform
+soccer uniform
+baseball uniform
+racing queen
+flight attendant
+pilot suit
+military uniform
+naval uniform
+sailor outfit
+police uniform
+detective outfit
+spy suit
+ninja outfit
+samurai armor
+knight armor
+fantasy armor, bikini armor
+witch outfit, witch hat
+wizard robe
+sorceress outfit
+cloak, hood
+princess dress
+fairy outfit
+angel outfit, wings, halo
+devil outfit, demon horns, demon tail
+vampire outfit
+gothic lolita
+sweet lolita
+classic lolita
+punk fashion
+cyberpunk outfit
+sci-fi bodysuit
+latex bodysuit
+plugsuit
+racing suit
+spacesuit
+astronaut suit
+diver suit
+wetsuit
+pajamas
+negligee
+babydoll
+nightgown
+bathrobe
+towel only
+apron only, naked apron
+oversized shirt
+crop top, hot pants
+tank top, shorts
+hoodie, sweatpants
+sweater, miniskirt
+cardigan, pleated skirt
+turtleneck sweater
+off-shoulder sweater
+camisole, jeans
+halter top, leather pants
+tube top, denim shorts
+sports bra, yoga pants
+jersey, track pants
+down jacket, winter clothes
+fur coat
+trench coat
+raincoat
+santa costume
+reindeer costume
+halloween costume
+vampire costume
+zombie costume
+cowgirl outfit
+pirate outfit
