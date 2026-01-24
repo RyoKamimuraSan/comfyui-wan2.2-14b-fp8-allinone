@@ -40,6 +40,9 @@ smoothMixWan2214BI2V_i2vV20Low.safetensors::https://huggingface.co/landon2022/sm
 smoothMixWan2214BI2V_i2vV20High.safetensors::https://huggingface.co/landon2022/smooth_mix_v2/resolve/main/smoothMixWan2214BI2V_i2vV20High.safetensors \
 "
 ENV ULTRALYTICS_BBOX_URLS=""
+ENV CLIP_VISION_URLS="\
+clip_vision_h.safetensors::https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors \
+"
 
 # ============================================
 # Custom Node インストール設定（環境変数で上書き可能）
@@ -95,6 +98,7 @@ RUN mkdir -p \
     /app/models/controlnet \
     /app/models/upscale_models \
     /app/models/clip \
+    /app/models/clip_vision \
     /app/models/unet \
     /app/models/text_encoders \
     /app/models/diffusion_models \
@@ -111,6 +115,7 @@ COPY scripts/download_models.sh /usr/local/bin/
 COPY scripts/install_custom_nodes.sh /usr/local/bin/
 COPY scripts/start.sh /app/
 COPY scripts/start-paperspace.sh /app/
+COPY scripts/init-civicomfy-apikey.js /usr/local/bin/
 
 # supervisord設定ファイルをコピー
 COPY scripts/supervisord.conf /etc/supervisor/supervisord.conf

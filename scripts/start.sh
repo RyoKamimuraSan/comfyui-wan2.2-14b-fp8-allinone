@@ -47,6 +47,13 @@ mkdir -p /app/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife
 /usr/local/bin/download_model.sh /app/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife \
     "https://github.com/styler00dollar/VSGAN-tensorrt-docker/releases/download/models/rife49.pth"
 
+# Configure Civicomfy API key if set
+if [ -n "$CIVITAI_API_KEY" ] && [ -d "/app/custom_nodes/Civicomfy/web/js" ]; then
+    echo "[CONFIG] Setting Civitai API key for Civicomfy..."
+    sed "s/__CIVITAI_API_KEY__/$CIVITAI_API_KEY/" /usr/local/bin/init-civicomfy-apikey.js \
+        > /app/custom_nodes/Civicomfy/web/js/init-apikey.js
+fi
+
 # モデルのダウンロード
 echo ""
 echo "[3/4] Downloading models..."
@@ -56,6 +63,7 @@ echo "[3/4] Downloading models..."
 /usr/local/bin/download_models.sh /app/models/controlnet "$CONTROLNET_URLS"
 /usr/local/bin/download_models.sh /app/models/upscale_models "$UPSCALE_URLS"
 /usr/local/bin/download_models.sh /app/models/clip "$CLIP_URLS"
+/usr/local/bin/download_models.sh /app/models/clip_vision "$CLIP_VISION_URLS"
 /usr/local/bin/download_models.sh /app/models/unet "$UNET_URLS"
 /usr/local/bin/download_models.sh /app/models/text_encoders "$TEXT_ENCODER_URLS"
 /usr/local/bin/download_models.sh /app/models/diffusion_models "$DIFFUSION_MODEL_URLS"

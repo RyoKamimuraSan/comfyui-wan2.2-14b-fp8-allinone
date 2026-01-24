@@ -137,6 +137,54 @@ docker run --gpus all -p 6006:6006 \
 - Civitaiモデルをダウンロードするには、実行時に `CIVITAI_API_KEY` 環境変数が必要です
 - APIキーがない場合、Civitaiモデルはスキップされます
 
+## wan22-smooth-mix 版
+
+Wan2.2 smooth-mix モデル用に最適化されたイメージ：
+
+```bash
+docker pull ryokamimurasan/comfyui-wan22-smooth-mix
+```
+
+### デフォルトでダウンロードされるモデル
+
+| カテゴリ | モデル名 | ソース |
+|---------|---------|--------|
+| diffusion_models | smoothMixWan2214BI2V_i2vV20Low.safetensors | HuggingFace |
+| diffusion_models | smoothMixWan2214BI2V_i2vV20High.safetensors | HuggingFace |
+| vae | wan_2.1_vae.safetensors | HuggingFace |
+| text_encoders | nsfw_wan_umt5-xxl_fp8_scaled.safetensors | HuggingFace |
+| text_encoders | nsfw_wan_umt5-xxl_bf16.safetensors | HuggingFace |
+| clip_vision | clip_vision_h.safetensors | HuggingFace |
+| loras | lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank128_bf16.safetensors | HuggingFace |
+| upscale_models | 4x-UltraSharp.pth | HuggingFace |
+
+### ビルド
+
+```bash
+docker build -f Dockerfile.wan22-smooth-mix -t comfyui-wan22-smooth-mix .
+```
+
+### 実行
+
+```bash
+docker run --gpus all -p 6006:6006 \
+  -e CIVITAI_API_KEY=your_api_key \
+  ryokamimurasan/comfyui-wan22-smooth-mix
+```
+
+## Civitai API キー
+
+`CIVITAI_API_KEY` 環境変数を設定すると、以下の機能が有効になります：
+
+1. **モデルダウンロード** - Civitai URLからのモデル直接ダウンロード時に認証
+2. **Civicomfy** - ブラウザでComfyUIを開くと、APIキーが自動的にCivicomfyの設定に注入されます
+
+```bash
+docker run --gpus all -p 6006:6006 \
+  -e CIVITAI_API_KEY=your_api_key \
+  ryokamimurasan/comfyui-allinone
+```
+
 ## ビルド
 
 ```bash
