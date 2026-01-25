@@ -121,6 +121,8 @@ wan_2.1_vae.safetensors::https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repack
 "
 ENV LORA_URLS="\
 lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank128_bf16.safetensors::https://huggingface.co/Kijai/WanVideo_comfy/resolve/709844db75d2e15582cf204e9a0b5e12b23a35dd/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank128_bf16.safetensors \
+smoothMixAnimation_High.safetensors::https://huggingface.co/RyoKamimura/repack-wan22-smoothmix/resolve/main/loras/SmoothMixAnimation_High.safetensors?download=true \
+smoothMixAnimation_Low.safetensors::https://huggingface.co/RyoKamimura/repack-wan22-smoothmix/resolve/main/loras/SmoothMixAnimation_Low.safetensors?download=true \
 "
 ENV CONTROLNET_URLS=""
 ENV UPSCALE_URLS="\
@@ -133,8 +135,8 @@ nsfw_wan_umt5-xxl_fp8_scaled.safetensors::https://huggingface.co/NSFW-API/NSFW-W
 nsfw_wan_umt5-xxl_bf16.safetensors::https://huggingface.co/NSFW-API/NSFW-Wan-UMT5-XXL/resolve/main/nsfw_wan_umt5-xxl_bf16.safetensors \
 "
 ENV DIFFUSION_MODEL_URLS="\
-smoothMixWan2214BI2V_i2vV20Low.safetensors::https://huggingface.co/landon2022/smooth_mix_v2/resolve/main/smoothMixWan2214BI2V_i2vV20Low.safetensors \
-smoothMixWan2214BI2V_i2vV20High.safetensors::https://huggingface.co/landon2022/smooth_mix_v2/resolve/main/smoothMixWan2214BI2V_i2vV20High.safetensors \
+smoothMixWan2214BI2V_i2vV20High.safetensors::https://huggingface.co/RyoKamimura/repack-wan22-smoothmix/resolve/main/models/smoothMixWan2214BI2V_i2vV20High.safetensors?download=true \
+smoothMixWan2214BI2V_i2vV20Low.safetensors::https://huggingface.co/RyoKamimura/repack-wan22-smoothmix/resolve/main/models/smoothMixWan2214BI2V_i2vV20Low.safetensors?download=true \
 "
 ENV ULTRALYTICS_BBOX_URLS=""
 ENV CLIP_VISION_URLS="\
