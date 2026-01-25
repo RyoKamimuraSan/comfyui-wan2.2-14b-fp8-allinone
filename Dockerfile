@@ -37,8 +37,8 @@ WORKDIR /app
 RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git . \
     && rm -rf .git
 
-# ComfyUIの依存関係 + JupyterLab + supervisor をインストール
-RUN pip install -r requirements.txt jupyterlab supervisor && \
+# ComfyUIの依存関係 + JupyterLab + supervisor + websocket-client をインストール
+RUN pip install -r requirements.txt jupyterlab supervisor websocket-client && \
     mkdir -p /var/log/supervisor && \
     find /opt/conda/lib/python*/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
@@ -96,7 +96,7 @@ WORKDIR /app
 COPY scripts/download_model.sh /usr/local/bin/
 COPY scripts/download_models.sh /usr/local/bin/
 COPY scripts/install_custom_nodes.sh /usr/local/bin/
-COPY scripts/keepalive.sh /usr/local/bin/
+COPY scripts/keepalive.py /usr/local/bin/
 COPY scripts/start.sh /app/
 COPY scripts/start-paperspace.sh /app/
 
@@ -105,7 +105,7 @@ COPY scripts/supervisord.conf /etc/supervisor/supervisord.conf
 COPY scripts/supervisord-paperspace.conf /etc/supervisor/supervisord-paperspace.conf
 
 # 実行権限付与
-RUN chmod +x /usr/local/bin/*.sh /app/*.sh
+RUN chmod +x /usr/local/bin/*.sh /usr/local/bin/keepalive.py /app/*.sh
 
 # ============================================
 # 不要ファイルの削除（イメージサイズ最適化）
