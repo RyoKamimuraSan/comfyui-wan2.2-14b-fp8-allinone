@@ -1,196 +1,210 @@
 # ComfyUI All-in-One Docker Image
 
-ComfyUI を簡単にデプロイできる Docker イメージです。モデルとカスタムノードは起動時に自動ダウンロード・インストールされます。
+A Docker image for easy ComfyUI deployment with automatic model downloading and JupyterLab integration.
 
-## 特徴
+## Features
 
-- **PyTorch 2.9.1 + CUDA 12.6** ベース
-- **モデル自動ダウンロード** - 環境変数でURLを指定
-- **JupyterLab** 対応（Paperspace Notebooks用）
-- カスタムノードは起動時に自動インストール
+- **Auto Model Download** - Models download automatically at startup via environment variables
+- **JupyterLab Included** - For notebook workflows and file management
+- **Pre-installed Custom Nodes** - Popular nodes ready to use out of the box
+- **PyTorch 2.9.1 + CUDA 12.6** - Latest deep learning stack
 
-## Paperspace Notebooks で使用
+## Tested Platforms
 
-### 1. Paperspace で起動
+- Paperspace Notebooks
+- RunPod
+- Local Docker
 
-| 設定項目 | 値 |
-|----------|-----|
-| Container Image | `ryokamimurasan/comfyui-allinone` |
+**Docker Hub**: [ryokamimurasan](https://hub.docker.com/u/ryokamimurasan)
+
+---
+
+## Paperspace Notebooks
+
+### Setup
+
+| Setting | Value |
+|---------|-------|
+| Container Image | `ryokamimurasan/comfyui-wan22-14b-fp8-paperspace-nb` |
 | Command | `/app/start-paperspace.sh` |
 
-### 2. ComfyUI にアクセス
+### Accessing Services
 
-ComfyUIはTensorBoardポート（6006）で起動するため、以下のURL形式でアクセス：
+| Service | Port | URL Format |
+|---------|------|------------|
+| ComfyUI | 6006 | `https://tensorboard-{notebook-id}.paperspacegradient.com` |
+| JupyterLab | 8888 | Default Paperspace URL |
 
-```
-https://tensorboard-{notebook-id}.{domain}.paperspacegradient.com
-```
-
-**例:**
+**Example:**
 - JupyterLab: `https://abc123.xyz456.paperspacegradient.com`
 - ComfyUI: `https://tensorboard-abc123.xyz456.paperspacegradient.com`
 
-### ポート
+### Keepalive Feature
 
-| ポート | 用途 | アクセス方法 |
-|--------|------|-------------|
-| 6006 | ComfyUI Web UI | TensorBoard URL |
-| 8888 | JupyterLab | デフォルトURL |
+Automatically enabled in Paperspace mode. Sends a beacon every 15 minutes to prevent idle shutdown.
 
-## ローカル Docker で実行
+### Storage Persistence
 
-```bash
-docker run --gpus all -p 6006:6006 \
-  -v $(pwd)/models:/app/models \
-  -v $(pwd)/output:/app/output \
-  ryokamimurasan/comfyui-allinone
-```
+The following directories are automatically linked to `/storage` for persistence:
 
-ComfyUI: `http://localhost:6006`
-
-## Storage 永続化
-
-`/storage` ディレクトリがマウントされている場合、以下のシンボリックリンクが自動作成されます：
-
-| ローカルパス | リンク先 |
-|-------------|---------|
+| Local Path | Linked To |
+|------------|-----------|
 | `/app/output` | `/storage/output` |
 | `/app/user/default/workflows` | `/storage/workflow` |
 
-これにより、出力ファイルとワークフローが永続化されます。
+---
 
-## モデルの設定
+## RunPod
 
-環境変数でダウンロードするモデルURLを指定できます。
+Tested and confirmed working on RunPod. Uses `/workspace` for storage persistence with the same features as Paperspace.
+
+---
+
+## Local Docker
+
+### Basic Usage
 
 ```bash
--e CHECKPOINT_URLS="model.safetensors::https://example.com/model.safetensors"
--e VAE_URLS="vae.safetensors::https://example.com/vae.safetensors"
--e LORA_URLS="lora.safetensors::https://example.com/lora.safetensors"
+docker run --gpus all -p 6006:6006 -p 8888:8888 \
+  ryokamimurasan/comfyui-wan22-14b-fp8-paperspace-nb
 ```
 
-**書式:** `ファイル名::URL`（スペース区切りで複数指定可能）
+### With Volume Mounts (Recommended)
 
-**デフォルトでダウンロードされるモデル:**
+```bash
+docker run --gpus all -p 6006:6006 -p 8888:8888 \
+  -v $(pwd)/models:/app/models \
+  -v $(pwd)/output:/app/output \
+  ryokamimurasan/comfyui-wan22-14b-fp8-paperspace-nb
+```
+
+### Access
+
+| Service | URL |
+|---------|-----|
+| ComfyUI | `http://localhost:6006` |
+| JupyterLab | `http://localhost:8888` |
+
+---
+
+## Paperspace vs Local Docker
+
+| Aspect | Paperspace | Local Docker |
+|--------|------------|--------------|
+| Command | `/app/start-paperspace.sh` | (default entrypoint) |
+| Keepalive | Auto-enabled | Not needed |
+| Storage | `/storage` auto-linked | Use `-v` volume mounts |
+| Access | Via Paperspace proxy URLs | `localhost:port` |
+
+---
+
+## Available Images
+
+| Image | Use Case | Default Models |
+|-------|----------|----------------|
+| `ryokamimurasan/comfyui-wan22-14b-fp8-paperspace-nb` | Wan2.2 14B video generation | Wan2.2 Remix NSFW i2v 14b, wan 2.1 VAE, 4x-UltraSharp |
+| `ryokamimurasan/comfyui-qwen-image-edit-2511-paperspace-nb` | Image editing with Qwen | Qwen Image Edit fp8, 2dn_animeV3, qwen_2.5_vl_7b |
+| `ryokamimurasan/comfyui-wan22-smooth-mix-v2-paperspace-nb` | Wan2.2 smooth-mix video | smoothMixWan22 i2v models, LightX2V LoRA |
+
+### comfyui-wan22-14b-fp8-paperspace-nb (Default)
+
+Optimized for Wan2.2 14B video generation:
 - Wan2.2 Remix NSFW i2v 14b (high/low lighting)
 - wan 2.1 VAE
-- 4x-UltraSharp (upscale)
-- nsfw_wan_umt5-xxl_fp8_scaled (text encoder)
+- 4x-UltraSharp upscaler
+- nsfw_wan_umt5-xxl_fp8_scaled text encoder
 
-## カスタムノードの設定
+### comfyui-qwen-image-edit-2511-paperspace-nb
 
-環境変数 `CUSTOM_NODE_URLS` でインストールするカスタムノードを指定できます。
+Optimized for Qwen-based image editing:
+- qwen_image_edit_2511_fp8 lightning 8-steps
+- 2dn_animeV3 checkpoint
+- qwen_2.5_vl_7b_fp8 text encoder
+- Ultralytics BBOX models for segmentation
 
-```bash
--e CUSTOM_NODE_URLS="https://github.com/xxx/yyy https://github.com/aaa/bbb"
-```
+**Note:** Requires `CIVITAI_API_KEY` for some models.
 
-**デフォルトでインストールされるカスタムノード:**
-- ComfyUI-Manager
-- Civicomfy
-- ComfyUI-VideoHelperSuite
-- ComfyUI-Impact-Pack
-- ComfyUI-RMBG
-- rgthree-comfy
-- ComfyUI-KJNodes
-- ComfyUI-Frame-Interpolation
-- ComfyUI-Custom-Scripts
+### comfyui-wan22-smooth-mix-v2-paperspace-nb
 
-## qwen-image-edit-2511 版
+Optimized for smooth-mix video generation:
+- smoothMixWan22 14B i2v (high/low versions)
+- LightX2V step distill LoRA
+- CLIP Vision model
+- Both fp8 and bf16 text encoders
 
-qwen-image-edit-2511 用に最適化されたイメージ：
+---
 
-```bash
-docker pull ryokamimurasan/comfyui-qwen-image-edit-2511
-```
+## Configuration
 
-### デフォルトでダウンロードされるモデル
+### Environment Variables
 
-| カテゴリ | モデル名 | ソース |
-|---------|---------|--------|
-| checkpoints | 2dn_animeV3.safetensors | Civitai |
-| diffusion_models | qwen_image_edit_2511_fp8_e4m3fn_scaled_lightning_8steps_v1.0.safetensors | HuggingFace |
-| loras | qwen-image_nsfw_adv_v1.0.safetensors | Civitai |
-| loras | NoobV065sHyperDmd.safetensors | HuggingFace |
-| text_encoders | qwen_2.5_vl_7b_fp8_scaled.safetensors | HuggingFace |
-| vae | qwen_image_vae.safetensors | HuggingFace |
-| upscale_models | 4x-UltraSharp.pth | HuggingFace |
-| ultralytics/bbox | Anzhc Breasts Seg v1 1024m.pt | HuggingFace |
-| ultralytics/bbox | Anzhc Eyes -seg-hd.pt | HuggingFace |
-| ultralytics/bbox | Anzhc Face -seg.pt | HuggingFace |
+| Variable | Description | Format |
+|----------|-------------|--------|
+| `CIVITAI_API_KEY` | Civitai API key for model downloads and Civicomfy | API key string |
+| `CHECKPOINT_URLS` | Checkpoint models | `filename::URL` (space-separated) |
+| `VAE_URLS` | VAE models | `filename::URL` |
+| `LORA_URLS` | LoRA models | `filename::URL` |
+| `CONTROLNET_URLS` | ControlNet models | `filename::URL` |
+| `UPSCALE_URLS` | Upscale models | `filename::URL` |
+| `CLIP_URLS` | CLIP models | `filename::URL` |
+| `CLIP_VISION_URLS` | CLIP Vision models | `filename::URL` |
+| `TEXT_ENCODER_URLS` | Text encoders | `filename::URL` |
+| `DIFFUSION_MODEL_URLS` | Diffusion models | `filename::URL` |
+| `UNET_URLS` | UNet models | `filename::URL` |
+| `ULTRALYTICS_BBOX_URLS` | Ultralytics BBOX models | `filename::URL` |
+| `EXTRA_CUSTOM_NODE_URLS` | Additional custom nodes | Git URLs (space-separated) |
 
-### ビルド
-
-```bash
-docker build -f Dockerfile.qwen-image-edit-2511 -t comfyui-qwen-image-edit-2511 .
-```
-
-### 実行
+### Example
 
 ```bash
 docker run --gpus all -p 6006:6006 \
   -e CIVITAI_API_KEY=your_api_key \
-  ryokamimurasan/comfyui-qwen-image-edit-2511
+  -e LORA_URLS="style.safetensors::https://example.com/style.safetensors" \
+  ryokamimurasan/comfyui-wan22-14b-fp8-paperspace-nb
 ```
 
-**注意:**
-- Civitaiモデルをダウンロードするには、実行時に `CIVITAI_API_KEY` 環境変数が必要です
-- APIキーがない場合、Civitaiモデルはスキップされます
+### Civitai API Key
 
-## wan22-smooth-mix 版
+Setting `CIVITAI_API_KEY` enables:
+1. **Model Downloads** - Authentication for downloading from Civitai URLs
+2. **Civicomfy Integration** - API key is automatically injected into Civicomfy settings
 
-Wan2.2 smooth-mix モデル用に最適化されたイメージ：
+---
+
+## Pre-installed Custom Nodes
+
+| Node | Repository |
+|------|------------|
+| ComfyUI-Manager | [ltdrdata/ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) |
+| Civicomfy | [Civitai/civitai_comfy_nodes](https://github.com/Civitai/civitai_comfy_nodes) |
+| ComfyUI-VideoHelperSuite | [Kosinkadink/ComfyUI-VideoHelperSuite](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite) |
+| ComfyUI-Impact-Pack | [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) |
+| ComfyUI-RMBG | [ssitu/ComfyUI-RMBG](https://github.com/ssitu/ComfyUI-RMBG) |
+| rgthree-comfy | [rgthree/rgthree-comfy](https://github.com/rgthree/rgthree-comfy) |
+| ComfyUI-KJNodes | [kijai/ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes) |
+| ComfyUI-Frame-Interpolation | [Fannovel16/ComfyUI-Frame-Interpolation](https://github.com/Fannovel16/ComfyUI-Frame-Interpolation) |
+| ComfyUI-Custom-Scripts | [pythongosssss/ComfyUI-Custom-Scripts](https://github.com/pythongosssss/ComfyUI-Custom-Scripts) |
+| ComfyUI-WanVideoWrapper* | [kijai/ComfyUI-WanVideoWrapper](https://github.com/kijai/ComfyUI-WanVideoWrapper) |
+
+*ComfyUI-WanVideoWrapper is included in `comfyui-wan22-14b-fp8-paperspace-nb` and `comfyui-wan22-smooth-mix-v2-paperspace-nb` images only.
+
+---
+
+## Building from Source
 
 ```bash
-docker pull ryokamimurasan/comfyui-wan22-smooth-mix
-```
+# Main image
+docker build -t comfyui-allinone .
 
-### デフォルトでダウンロードされるモデル
+# Qwen Image Edit image
+docker build -f Dockerfile.qwen-image-edit-2511 -t comfyui-qwen-image-edit-2511 .
 
-| カテゴリ | モデル名 | ソース |
-|---------|---------|--------|
-| diffusion_models | smoothMixWan2214BI2V_i2vV20Low.safetensors | HuggingFace |
-| diffusion_models | smoothMixWan2214BI2V_i2vV20High.safetensors | HuggingFace |
-| vae | wan_2.1_vae.safetensors | HuggingFace |
-| text_encoders | nsfw_wan_umt5-xxl_fp8_scaled.safetensors | HuggingFace |
-| text_encoders | nsfw_wan_umt5-xxl_bf16.safetensors | HuggingFace |
-| clip_vision | clip_vision_h.safetensors | HuggingFace |
-| loras | lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank128_bf16.safetensors | HuggingFace |
-| upscale_models | 4x-UltraSharp.pth | HuggingFace |
-
-### ビルド
-
-```bash
+# Wan22 Smooth Mix image
 docker build -f Dockerfile.wan22-smooth-mix -t comfyui-wan22-smooth-mix .
 ```
 
-### 実行
+---
 
-```bash
-docker run --gpus all -p 6006:6006 \
-  -e CIVITAI_API_KEY=your_api_key \
-  ryokamimurasan/comfyui-wan22-smooth-mix
-```
-
-## Civitai API キー
-
-`CIVITAI_API_KEY` 環境変数を設定すると、以下の機能が有効になります：
-
-1. **モデルダウンロード** - Civitai URLからのモデル直接ダウンロード時に認証
-2. **Civicomfy** - ブラウザでComfyUIを開くと、APIキーが自動的にCivicomfyの設定に注入されます
-
-```bash
-docker run --gpus all -p 6006:6006 \
-  -e CIVITAI_API_KEY=your_api_key \
-  ryokamimurasan/comfyui-allinone
-```
-
-## ビルド
-
-```bash
-docker build -t comfyui-allinone .
-```
-
-## ライセンス
+## License
 
 MIT
