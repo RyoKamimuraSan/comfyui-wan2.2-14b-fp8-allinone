@@ -90,3 +90,4 @@ cd ComfyUI-Impact-Pack && git submodule update --init --depth 1 && cd ..
 | VAE_URLS | VAE URL |
 | LORA_URLS | LoRA URL |
 | EXTRA_CUSTOM_NODE_URLS | 追加カスタムノード Git URL |
+| COMFYUI_EXTRA_ARGS | ComfyUI 追加起動オプション (例: `--fp8_e4m3fn-unet --fp8_e4m3fn-text-enc`) |

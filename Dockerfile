@@ -77,6 +77,8 @@ RUN git clone --depth 1 https://github.com/Comfy-Org/ComfyUI-Manager && \
     git clone --depth 1 https://github.com/Fannovel16/ComfyUI-Frame-Interpolation && \
     git clone --depth 1 https://github.com/pythongosssss/ComfyUI-Custom-Scripts && \
     git clone --depth 1 https://github.com/kijai/ComfyUI-WanVideoWrapper && \
+    git clone --depth 1 https://github.com/yolain/ComfyUI-Easy-Use && \
+    git clone --depth 1 https://github.com/melMass/comfy_mtb && \
     rm -rf */.git
 
 # カスタムノードの依存関係を一括インストール
@@ -142,6 +144,7 @@ ENV ULTRALYTICS_BBOX_URLS=""
 
 # 追加カスタムノード用（起動時にインストール）
 ENV EXTRA_CUSTOM_NODE_URLS=""
+ENV COMFYUI_EXTRA_ARGS=""
 
 # ============================================
 # ポート公開
