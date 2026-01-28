@@ -125,6 +125,7 @@ ENV LORA_URLS="\
 lightx2v_I2V_14B_480p_cfg_step_distill_rank128_bf16.safetensors::https://huggingface.co/Kijai/WanVideo_comfy/resolve/709844db75d2e15582cf204e9a0b5e12b23a35dd/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank128_bf16.safetensors?download=true \
 smoothMixAnimation_High.safetensors::https://huggingface.co/RyoKamimura/repack-wan22-smoothmix/resolve/main/loras/SmoothMixAnimation_High.safetensors?download=true \
 smoothMixAnimation_Low.safetensors::https://huggingface.co/RyoKamimura/repack-wan22-smoothmix/resolve/main/loras/SmoothMixAnimation_Low.safetensors?download=true \
+wan2.2_i2v_A14b_low_noise_lora_rank64_lightx2v_4step_1022.safetensors::https://huggingface.co/lightx2v/Wan2.2-Distill-Loras/resolve/main/wan2.2_i2v_A14b_low_noise_lora_rank64_lightx2v_4step_1022.safetensors?download=true \
 "
 ENV CONTROLNET_URLS=""
 ENV UPSCALE_URLS="\
